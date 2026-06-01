@@ -1,307 +1,475 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import 'katex/dist/katex.min.css'
+import { PanelLeftOpen, MessageCircle, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
-import { Search, FolderOpen, FileText, Plus, ChevronRight } from 'lucide-react'
 
-export default function Home() {
-  const [subjects, setSubjects] = useState<any[]>([])
-  const [sections, setSections] = useState<any[]>([])
-  const [pdfs, setPdfs] = useState<any[]>([])
-  const [selectedSubject, setSelectedSubject] = useState<any>(null)
-  const [selectedSection, setSelectedSection] = useState<any>(null)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [showAddSubject, setShowAddSubject] = useState(false)
-  const [showAddSection, setShowAddSection] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newCode, setNewCode] = useState('')
-  const [uploading, setUploading] = useState(false)
-  const [uploadMsg, setUploadMsg] = useState('')
-  const [uploadProgress, setUploadProgress] = useState(0)
+import { useData } from './hooks/useData'
+import { useSearch } from './hooks/useSearch'
+import { useSidebar } from './hooks/useSidebar'
 
-  useEffect(() => { loadSubjects() }, [])
+import AppHeader from './components/AppHeader'
+import SelectModeBar from './components/SelectModeBar'
+import PreviewModal from './components/PreviewModal'
+import SubjectsPanel from './components/SubjectsPanel'
+import SectionsPanel from './components/SectionsPanel'
+import FilePanel from './components/FilePanel'
+import ChatPanel from './components/ChatPanel'
+import HomePage from './components/HomePage'
 
-  async function loadSubjects() {
-    const { data } = await supabase.from('subjects').select('*').order('name')
-    setSubjects(data || [])
+function AppShell() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const data = useData()
+  const search = useSearch()
+  const sidebar = useSidebar()
+
+  const [chatSubject, setChatSubject] = useState<any>(null)
+  const widgetRef = useRef<HTMLDivElement>(null)
+  // Track snap anchor so panel can be positioned on the correct side
+  const [snapAnchor, setSnapAnchor] = useState<Anchor>({ bottom: 24, right: 24 })
+  const [balloonTop, setBalloonTop] = useState<number | null>(null) // balloon top px from viewport top
+
+  // 8 snap anchors: corners + edge midpoints. Each gives {left|right, top|bottom} in px from viewport edge.
+  function snapToEdge(x: number, y: number): Anchor {
+    const W = window.innerWidth, H = window.innerHeight
+    const pad = 16
+    const cx = x + 26, cy = y + 26 // centre of the 52px balloon
+    const anchors = [
+      { left: pad,         top: pad },          // top-left
+      { left: W/2 - 26,   top: pad },          // top-mid
+      { right: pad,        top: pad },          // top-right
+      { left: pad,         top: H/2 - 26 },    // mid-left
+      { right: pad,        top: H/2 - 26 },    // mid-right
+      { left: pad,         bottom: pad },       // bot-left
+      { left: W/2 - 26,   bottom: pad },       // bot-mid
+      { right: pad,        bottom: pad },       // bot-right  (default)
+    ]
+    // Convert each anchor to absolute {ax, ay} for distance calc
+    const resolved = anchors.map(a => {
+      const ax = a.right !== undefined ? W - (a.right as number) - 52 : a.left as number
+      const ay = a.bottom !== undefined ? H - (a.bottom as number) - 52 : a.top as number
+      return { a, ax, ay, d: Math.hypot(cx - (ax + 26), cy - (ay + 26)) }
+    })
+    return resolved.sort((a, b) => a.d - b.d)[0].a
   }
 
-  async function loadSections(subjectId: string) {
-    const { data } = await supabase.from('sections').select('*').eq('subject_id', subjectId).order('name')
-    setSections(data || [])
+  type Anchor = { left?: number; right?: number; top?: number; bottom?: number }
+
+  function applySnap(el: HTMLDivElement, a: Anchor) {
+    el.style.left   = a.left   !== undefined ? a.left   + 'px' : ''
+    el.style.right  = a.right  !== undefined ? a.right  + 'px' : ''
+    el.style.top    = a.top    !== undefined ? a.top    + 'px' : ''
+    el.style.bottom = a.bottom !== undefined ? a.bottom + 'px' : ''
+    setSnapAnchor(a)
+    // Record balloon's top position so panel knows which direction has more space
+    const resolvedTop = a.bottom !== undefined ? window.innerHeight - (a.bottom as number) - 52 : (a.top as number)
+    setBalloonTop(resolvedTop)
   }
 
-  async function loadPdfs(sectionId: string) {
-    const { data } = await supabase.from('pdfs').select('*').eq('section_id', sectionId).order('name')
-    setPdfs(data || [])
+  function handleWidgetDrag(e: React.MouseEvent) {
+    if ((e.target as HTMLElement).closest('button')) return
+    e.preventDefault()
+    const el = widgetRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const offsetX = e.clientX - rect.left
+    const offsetY = e.clientY - rect.top
+    let moved = false
+
+    el.style.transition = 'none'
+    el.style.right = 'auto'
+    el.style.bottom = 'auto'
+    el.style.left = rect.left + 'px'
+    el.style.top = rect.top + 'px'
+
+    function onMove(ev: MouseEvent) {
+      moved = true
+      el!.style.left = (ev.clientX - offsetX) + 'px'
+      el!.style.top = (ev.clientY - offsetY) + 'px'
+    }
+    function onUp() {
+      window.removeEventListener('mousemove', onMove, true)
+      window.removeEventListener('mouseup', onUp, true)
+      if (!moved) return
+      // Snap to nearest of 8 anchors
+      const rect2 = el!.getBoundingClientRect()
+      const anchor = snapToEdge(rect2.left, rect2.top)
+      el!.style.transition = 'left 0.2s, right 0.2s, top 0.2s, bottom 0.2s'
+      applySnap(el!, anchor)
+    }
+    window.addEventListener('mousemove', onMove, true)
+    window.addEventListener('mouseup', onUp, true)
+  }
+  // If URL already has a subject param, skip the homepage on first render
+  const [showHome, setShowHome] = useState(!searchParams.get('subject'))
+  const [restored, setRestored] = useState(false)
+
+  const totalSelected = data.selectedSubjectIds.size + data.selectedSectionIds.size + data.selectedPdfIds.size
+
+  // Update URL to reflect current view
+  function pushUrl(subjectId: string | null, sectionId: string | null) {
+    const params = new URLSearchParams()
+    if (subjectId) params.set('subject', subjectId)
+    if (sectionId) params.set('section', sectionId)
+    const qs = params.toString()
+    router.replace(qs ? `/?${qs}` : '/', { scroll: false })
   }
 
-  async function addSubject() {
-    if (!newName.trim()) return
-    await supabase.from('subjects').insert({ name: newName, code: newCode })
-    setNewName(''); setNewCode(''); setShowAddSubject(false)
-    loadSubjects()
-  }
+  // On mount: load subjects then restore from URL if params present
+  useEffect(() => {
+    const init = async () => {
+      await data.loadSubjects()
+      data.loadStorageUsage()
+      data.loadStats()
 
-  async function addSection() {
-    if (!newName.trim() || !selectedSubject) return
-    await supabase.from('sections').insert({ name: newName, subject_id: selectedSubject.id })
-    setNewName(''); setShowAddSection(false)
-    loadSections(selectedSubject.id)
-  }
+      const subjectId = searchParams.get('subject')
+      const sectionId = searchParams.get('section')
 
-  async function handleSearch(query: string) {
-    setSearchQuery(query)
-    if (!query.trim()) { setSearchResults([]); return }
-    const { data } = await supabase
-      .from('pdf_chunks')
-      .select('*, pdfs(name, sections(name, subjects(name)))')
-      .ilike('content', `%${query}%`)
-      .limit(20)
-    setSearchResults(data || [])
-  }
-
-  async function uploadPdf(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file || !selectedSection) return
-    setUploading(true)
-    setUploadProgress(0)
-    setUploadMsg('Starting upload...')
-
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('sectionId', selectedSection.id)
-    formData.append('name', file.name.replace('.pdf', ''))
-
-    const res = await fetch('/api/upload', { method: 'POST', body: formData })
-    const reader = res.body?.getReader()
-    const decoder = new TextDecoder()
-
-    if (!reader) return
-
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-      const text = decoder.decode(value)
-      const lines = text.split('\n').filter(l => l.startsWith('data: '))
-      for (const line of lines) {
-        try {
-          const data = JSON.parse(line.replace('data: ', ''))
-          setUploadMsg(data.message)
-          setUploadProgress(data.progress)
-          if (data.step === 'done') {
-            loadPdfs(selectedSection.id)
-            setUploading(false)
+      if (subjectId) {
+        const { data: subj } = await supabase.from('subjects').select('*').eq('id', subjectId).single()
+        if (subj) {
+          await data.selectSubject(subj)
+          if (sectionId) {
+            const { data: sec } = await supabase.from('sections').select('*').eq('id', sectionId).single()
+            if (sec) data.selectSection(sec)
           }
-          if (data.step === 'error') {
-            setUploading(false)
-          }
-        } catch {}
+          setShowHome(false)
+        }
       }
+      setRestored(true)
+    }
+    init()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Sync URL whenever subject/section changes (after initial restore)
+  useEffect(() => {
+    if (!restored) return
+    if (!data.selectedSubject) {
+      pushUrl(null, null)
+      return
+    }
+    pushUrl(data.selectedSubject.id, data.selectedSection?.id ?? null)
+  }, [data.selectedSubject?.id, data.selectedSection?.id, restored]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleSelectResult(r: any) {
+    search.setSearchOpen(false)
+    if (r._type === 'formula') {
+      const subjectId = r.sections?.subject_id
+      if (subjectId) {
+        const { data: subj } = await supabase.from('subjects').select('*').eq('id', subjectId).single()
+        if (subj) { data.setSelectedSubject(subj); await data.loadSections(subjectId) }
+      }
+      data.setSelectedSection({ id: r.section_id, name: r.sections?.name, subject_id: r.sections?.subject_id, section_type: 'formula' })
+      await data.loadFormulas(r.section_id)
+      data.setHighlightFormulaId(r.id)
+      setShowHome(false)
+    } else if (r._type === 'mindmap') {
+      if (r.subjectId) {
+        const { data: subj } = await supabase.from('subjects').select('*').eq('id', r.subjectId).single()
+        if (subj) { await data.selectSubject(subj) }
+      }
+      const { data: sec } = await supabase.from('sections').select('*').eq('id', r.sectionId).single()
+      if (sec) data.selectSection(sec)
+      setShowHome(false)
+    } else {
+      search.setPreviewResult(r)
+      setShowHome(false)
     }
   }
 
-  function selectSubject(subject: any) {
-    setSelectedSubject(subject)
-    setSelectedSection(null)
-    setPdfs([])
-    setUploadMsg('')
-    setUploadProgress(0)
-    loadSections(subject.id)
+  async function navigateToFile(pdf: any) {
+    const subject = pdf.sections?.subjects
+    const section = { id: pdf.section_id, name: pdf.sections?.name, subject_id: pdf.sections?.subject_id, section_type: null as any }
+    if (subject) {
+      data.setSelectedSubject({ id: pdf.sections?.subject_id, ...subject })
+      await data.loadSections(pdf.sections?.subject_id)
+    }
+    data.setSelectedSection(section)
+    await data.loadPdfs(pdf.section_id)
   }
 
-  function selectSection(section: any) {
-    setSelectedSection(section)
-    setUploadMsg('')
-    setUploadProgress(0)
-    loadPdfs(section.id)
+  async function navigateToFormula(formula: any) {
+    const section = formula.sections
+    const subjectId = section?.subject_id
+    if (subjectId) {
+      const { data: subj } = await supabase.from('subjects').select('*').eq('id', subjectId).single()
+      if (subj) { data.setSelectedSubject(subj); await data.loadSections(subjectId) }
+    }
+    if (section) data.setSelectedSection({ id: formula.section_id, name: section.name, subject_id: section.subject_id, section_type: 'formula' })
+    await data.loadFormulas(formula.section_id)
+  }
+
+  function goHome() {
+    setShowHome(true)
+    pushUrl(null, null)
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <div
+      style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}
+      onMouseMove={sidebar.onMouseMove}
+      onMouseUp={sidebar.onMouseUp}
+      onMouseLeave={sidebar.onMouseUp}
+    >
+      <AppHeader
+        storage={data.storage}
+        searchQuery={search.searchQuery}
+        searchOpen={search.searchOpen}
+        searchHistory={search.searchHistory}
+        searchResults={search.searchResults}
+        searchWrapperRef={search.searchWrapperRef}
+        searchInputRef={search.searchInputRef}
+        onSearch={search.handleSearch}
+        onSearchFocus={() => search.setSearchOpen(true)}
+        onClearSearch={() => { search.handleSearch(''); search.setPreviewResult(null) }}
+        saveToHistory={search.saveToHistory}
+        clearHistory={search.clearHistory}
+        removeHistoryItem={search.removeHistoryItem}
+        onSelectResult={handleSelectResult}
+        onGoHome={goHome}
+      />
 
-      {/* Header */}
-      <div style={{ background: '#1e293b', color: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <h1 style={{ fontSize: '18px', fontWeight: '600' }}>📚 Lecture Notes</h1>
-        <div style={{ flex: 1, position: 'relative' }}>
-          <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-          <input
-            placeholder="Search across all notes..."
-            value={searchQuery}
-            onChange={e => handleSearch(e.target.value)}
-            style={{ width: '100%', padding: '8px 12px 8px 34px', borderRadius: '8px', border: 'none', background: '#334155', color: 'white', fontSize: '14px' }}
-          />
-        </div>
-      </div>
-
-      {/* Search Results */}
-      {searchQuery && (
-        <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0', padding: '12px 20px', maxHeight: '300px', overflowY: 'auto' }}>
-          <p style={{ fontSize: '12px', color: '#64748b', marginBottom: '8px' }}>{searchResults.length} results for "{searchQuery}"</p>
-          {searchResults.map((r: any) => (
-            <div key={r.id} style={{ padding: '10px', background: '#f8fafc', borderRadius: '8px', marginBottom: '8px', borderLeft: '3px solid #3b82f6' }}>
-              <p style={{ fontSize: '12px', color: '#64748b' }}>
-                {r.pdfs?.sections?.subjects?.name} → {r.pdfs?.sections?.name} → {r.pdfs?.name} — Page {r.page_number}
-              </p>
-              <p style={{ fontSize: '13px', fontWeight: '500', marginTop: '2px' }}>{r.heading}</p>
-              <p style={{ fontSize: '13px', color: '#475569', marginTop: '4px' }}>{r.content?.substring(0, 150)}...</p>
-            </div>
-          ))}
-          {searchResults.length === 0 && (
-            <p style={{ fontSize: '13px', color: '#94a3b8' }}>No results found</p>
-          )}
-        </div>
+      {data.selectMode && (
+        <SelectModeBar
+          totalSelected={totalSelected}
+          deleting={data.deleting}
+          onExit={data.exitSelectMode}
+          onDelete={data.bulkDelete}
+        />
       )}
 
-      {/* 3 Panel Layout */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      {search.previewResult && (
+        <PreviewModal
+          result={search.previewResult}
+          onClose={() => search.setPreviewResult(null)}
+        />
+      )}
 
-        {/* Panel 1 - Subjects */}
-        <div style={{ width: '220px', borderRight: '1px solid #e2e8f0', background: 'white', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>Subjects</span>
-            <button onClick={() => setShowAddSubject(!showAddSubject)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6' }}>
-              <Plus size={16} />
-            </button>
-          </div>
-          {showAddSubject && (
-            <div style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
-              <input
-                placeholder="Subject name"
-                value={newName}
-                onChange={e => setNewName(e.target.value)}
-                style={{ width: '100%', padding: '6px 8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', marginBottom: '6px' }}
-              />
-              <input
-                placeholder="Code (e.g. CE5509)"
-                value={newCode}
-                onChange={e => setNewCode(e.target.value)}
-                style={{ width: '100%', padding: '6px 8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', marginBottom: '6px' }}
-              />
-              <button onClick={addSubject} style={{ width: '100%', padding: '6px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
-                Add Subject
+      {/* 3-Panel Layout */}
+      {showHome ? (
+        <HomePage
+          stats={data.stats}
+          subjects={data.subjects}
+          recentSubjects={data.recentSubjects}
+          onSelectSubject={s => { data.selectSubject(s); setShowHome(false) }}
+          onOpenSearch={() => { search.setSearchOpen(true); search.searchInputRef.current?.focus(); setShowHome(false) }}
+          onAddSubject={() => { setShowHome(false); data.setShowAddSubject(true) }}
+          onUpdateSubject={data.updateSubject}
+          onDeleteSubject={(e, s) => { data.deleteSubject(e, s); }}
+        />
+      ) : null}
+      <div style={{ display: showHome ? 'none' : 'flex', flex: 1, overflow: 'hidden' }}>
+
+        {/* Subjects sidebar */}
+        <div style={{ position: 'relative', display: 'flex', flexShrink: 0 }}>
+          {sidebar.subjectCollapsed ? (
+            <div style={{ width: '32px', borderRight: '1px solid #e2e8f0', background: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '8px', gap: '8px' }}>
+              <button title="Expand subjects" onClick={() => sidebar.setSubjectCollapsed(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px' }}>
+                <PanelLeftOpen size={16} />
               </button>
+              <span style={{ fontSize: '10px', color: '#94a3b8', writingMode: 'vertical-rl', transform: 'rotate(180deg)', marginTop: '4px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Subjects</span>
+            </div>
+          ) : (
+            <div style={{ width: sidebar.subjectWidth, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <SubjectsPanel
+                subjects={data.subjects}
+                selectedSubject={data.selectedSubject}
+                selectMode={data.selectMode}
+                selectedSubjectIds={data.selectedSubjectIds}
+                renaming={data.renaming}
+                showAddSubject={data.showAddSubject}
+                onSelectSubject={s => { data.selectSubject(s); setShowHome(false); if (!sidebar.subjectPinned) sidebar.setSubjectCollapsed(true) }}
+                onToggleSelect={id => data.setSelectedSubjectIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })}
+                onDeleteSubject={data.deleteSubject}
+                onStartRename={data.startRename}
+                onOpenChat={(e, subject) => { e.stopPropagation(); setChatSubject(subject) }}
+                onToggleSelectMode={() => { data.setSelectMode(!data.selectMode); if (data.selectMode) data.exitSelectMode() }}
+                onToggleAddSubject={() => data.setShowAddSubject(!data.showAddSubject)}
+                onAddSubject={data.addSubject}
+                renameState={data.renaming}
+                renameInputRef={data.renameInputRef}
+                onRenameChange={(name, code, category) => data.setRenaming(r => r ? { ...r, name, ...(code !== undefined ? { code } : {}), ...(category !== undefined ? { category } : {}) } : r)}
+                onRenameKey={data.handleRenameKey}
+                onRenameBlur={data.commitRename}
+                onCollapse={() => sidebar.setSubjectCollapsed(true)}
+                onTogglePin={() => sidebar.setSubjectPinned(p => !p)}
+                pinned={sidebar.subjectPinned}
+              />
             </div>
           )}
-          <div style={{ overflowY: 'auto', flex: 1 }}>
-            {subjects.map((s: any) => (
-              <div key={s.id} onClick={() => selectSubject(s)}
-                style={{
-                  padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9',
-                  background: selectedSubject?.id === s.id ? '#eff6ff' : 'white',
-                  borderLeft: selectedSubject?.id === s.id ? '3px solid #3b82f6' : '3px solid transparent'
-                }}>
-                <div style={{ fontSize: '13px', fontWeight: '500', color: selectedSubject?.id === s.id ? '#1d4ed8' : '#1e293b' }}>{s.name}</div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>{s.code}</div>
-              </div>
-            ))}
-          </div>
+          {!sidebar.subjectCollapsed && (
+            <div
+              onMouseDown={e => { sidebar.resizingSidebar.current = { panel: 'subject', startX: e.clientX, startW: sidebar.subjectWidth } }}
+              style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '5px', cursor: 'col-resize', zIndex: 10, background: 'transparent' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(59,130,246,0.3)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            />
+          )}
         </div>
 
-        {/* Panel 2 - Sections */}
-        <div style={{ width: '200px', borderRight: '1px solid #e2e8f0', background: 'white', display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>Sections</span>
-            {selectedSubject && (
-              <button onClick={() => setShowAddSection(!showAddSection)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#3b82f6' }}>
-                <Plus size={16} />
+        {/* Sections sidebar */}
+        <div style={{ position: 'relative', display: 'flex', flexShrink: 0 }}>
+          {sidebar.sectionCollapsed ? (
+            <div style={{ width: '32px', borderRight: '1px solid #e2e8f0', background: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '8px', gap: '8px' }}>
+              <button title="Expand sections" onClick={() => sidebar.setSectionCollapsed(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '4px' }}>
+                <PanelLeftOpen size={16} />
               </button>
-            )}
-          </div>
-          {showAddSection && (
-            <div style={{ padding: '10px 12px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
-              <input
-                placeholder="Section name"
-                value={newName}
-                onChange={e => setNewName(e.target.value)}
-                style={{ width: '100%', padding: '6px 8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '13px', marginBottom: '6px' }}
+              <span style={{ fontSize: '10px', color: '#94a3b8', writingMode: 'vertical-rl', transform: 'rotate(180deg)', marginTop: '4px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Sections</span>
+            </div>
+          ) : (
+            <div style={{ width: sidebar.sectionWidth, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+              <SectionsPanel
+                sections={data.sections}
+                selectedSubject={data.selectedSubject}
+                selectedSection={data.selectedSection}
+                selectMode={data.selectMode}
+                selectedSectionIds={data.selectedSectionIds}
+                renaming={data.renaming}
+                showAddSection={data.showAddSection}
+                onSelectSection={s => { data.selectSection(s); if (!sidebar.sectionPinned) sidebar.setSectionCollapsed(true) }}
+                onToggleSelect={id => data.setSelectedSectionIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })}
+                onDeleteSection={data.deleteSection}
+                onStartRename={data.startRename}
+                onToggleAddSection={() => data.setShowAddSection(!data.showAddSection)}
+                onAddSection={data.addSection}
+                renameInputRef={data.renameInputRef}
+                onRenameChange={name => data.setRenaming(r => r ? { ...r, name } : r)}
+                onRenameKey={data.handleRenameKey}
+                onRenameBlur={data.commitRename}
+                onCollapse={() => sidebar.setSectionCollapsed(true)}
+                onTogglePin={() => sidebar.setSectionPinned(p => !p)}
+                pinned={sidebar.sectionPinned}
               />
-              <button onClick={addSection} style={{ width: '100%', padding: '6px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', fontSize: '13px', cursor: 'pointer' }}>
-                Add Section
-              </button>
             </div>
           )}
-          <div style={{ overflowY: 'auto', flex: 1 }}>
-            {!selectedSubject && (
-              <div style={{ padding: '20px 12px', fontSize: '13px', color: '#94a3b8', textAlign: 'center' }}>Select a subject</div>
-            )}
-            {sections.map((s: any) => (
-              <div key={s.id} onClick={() => selectSection(s)}
-                style={{
-                  padding: '10px 12px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9',
-                  background: selectedSection?.id === s.id ? '#eff6ff' : 'white',
-                  borderLeft: selectedSection?.id === s.id ? '3px solid #3b82f6' : '3px solid transparent',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-                }}>
-                <span style={{ fontSize: '13px', color: selectedSection?.id === s.id ? '#1d4ed8' : '#1e293b' }}>{s.name}</span>
-                <ChevronRight size={14} color="#94a3b8" />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Panel 3 - PDFs */}
-        <div style={{ flex: 1, background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div style={{ padding: '10px 16px', borderBottom: '1px solid #e2e8f0', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase' }}>
-              {selectedSection ? selectedSection.name : 'PDFs'}
-            </span>
-            {selectedSection && (
-              <label style={{ padding: '6px 14px', background: uploading ? '#94a3b8' : '#3b82f6', color: 'white', borderRadius: '8px', cursor: uploading ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: '500' }}>
-                {uploading ? 'Processing...' : '+ Upload PDF'}
-                <input type="file" accept=".pdf" onChange={uploadPdf} style={{ display: 'none' }} disabled={uploading} />
-              </label>
-            )}
-          </div>
-
-          {/* Progress Bar */}
-          {(uploadMsg || uploading) && (
-            <div style={{ padding: '10px 16px', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                <span style={{ fontSize: '13px', color: '#16a34a' }}>{uploadMsg}</span>
-                <span style={{ fontSize: '13px', fontWeight: '500', color: '#16a34a' }}>{uploadProgress}%</span>
-              </div>
-              <div style={{ background: '#dcfce7', borderRadius: '99px', height: '6px', overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  width: `${uploadProgress}%`,
-                  background: '#16a34a',
-                  borderRadius: '99px',
-                  transition: 'width 0.3s ease'
-                }} />
-              </div>
-            </div>
+          {!sidebar.sectionCollapsed && (
+            <div
+              onMouseDown={e => { sidebar.resizingSidebar.current = { panel: 'section', startX: e.clientX, startW: sidebar.sectionWidth } }}
+              style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '5px', cursor: 'col-resize', zIndex: 10, background: 'transparent' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(59,130,246,0.3)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            />
           )}
-
-          <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
-            {!selectedSection && (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
-                <FolderOpen size={48} style={{ margin: '0 auto 12px', display: 'block' }} />
-                <p>Select a subject and section to view PDFs</p>
-              </div>
-            )}
-            {selectedSection && pdfs.length === 0 && !uploading && (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94a3b8' }}>
-                <FileText size={48} style={{ margin: '0 auto 12px', display: 'block' }} />
-                <p>No PDFs uploaded yet</p>
-                <p style={{ fontSize: '13px', marginTop: '8px' }}>Click Upload PDF to get started</p>
-              </div>
-            )}
-            {pdfs.map((p: any) => (
-              <div key={p.id} style={{ background: 'white', borderRadius: '10px', padding: '14px 16px', marginBottom: '10px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <FileText size={20} color="#3b82f6" />
-                  <div>
-                    <p style={{ fontSize: '14px', fontWeight: '500' }}>{p.name}</p>
-                    <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>{p.pages} pages</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
+        <FilePanel
+          selectedSection={data.selectedSection}
+          pdfs={data.pdfs}
+          formulas={data.formulas}
+          uploadQueue={data.uploadQueue}
+          uploading={data.uploading}
+          selectMode={data.selectMode}
+          selectedPdfIds={data.selectedPdfIds}
+          onToggleSelectPdf={id => data.setSelectedPdfIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })}
+          onDeletePdf={data.deletePdf}
+          onOpenPdfChat={(e, pdf) => { e.stopPropagation(); setChatSubject({ type: 'pdf', id: pdf.id, name: pdf.name }) }}
+          onStartUploads={data.startUploads}
+          onReloadFormulas={data.loadFormulas}
+          onReloadPdfs={data.loadPdfs}
+          fileInputRef={data.fileInputRef}
+          onUploadPdfs={data.uploadPdfs}
+          setResizingImg={sidebar.setResizingImg}
+          highlightFormulaId={data.highlightFormulaId}
+          lectureMaps={data.lectureMaps}
+          onSaveLectureMap={data.saveLectureMap}
+          onDeleteLectureMaps={data.deleteLectureMaps}
+          onPdfOrderChange={() => {
+            const mindmapSection = data.sections.find(s => s.section_type === 'mindmap')
+            if (data.selectedSubject && mindmapSection) {
+              data.loadLectureMaps(data.selectedSubject.id, mindmapSection.id)
+            }
+          }}
+        />
+      </div>
+
+      {/* Floating AI widget — balloon is the anchor, panel floats absolutely */}
+      <div
+        ref={widgetRef}
+        onMouseDown={handleWidgetDrag}
+        style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 201, width: 52, height: 52, cursor: 'grab' }}
+      >
+        {chatSubject && (
+          <div style={{
+            position: 'absolute',
+            // Vertical: open toward whichever side has more space
+            ...(balloonTop === null || balloonTop > window.innerHeight / 2 ? { bottom: 60 } : { top: 60 }),
+            // Horizontal: left-align to balloon, then shift left if panel overflows right edge
+            left: 0,
+            transform: (() => {
+              const balloonLeft = snapAnchor.right !== undefined
+                ? window.innerWidth - (snapAnchor.right as number) - 52
+                : (snapAnchor.left as number) ?? 0
+              const overflow = balloonLeft + 400 - window.innerWidth + 8
+              return overflow > 0 ? `translateX(-${overflow}px)` : 'none'
+            })(),
+            width: 400,
+            zIndex: 201,
+          }}>
+            <ChatPanel
+              key={chatSubject === 'global' ? 'global' : chatSubject?.type === 'pdf' ? `pdf:${chatSubject.id}` : chatSubject?.id}
+              chatSubject={chatSubject}
+              setChatSubject={setChatSubject}
+              onNavigateToFile={navigateToFile}
+              onNavigateToFormula={navigateToFormula}
+              onDragHeader={handleWidgetDrag}
+            />
+          </div>
+        )}
+        <button
+          onMouseDown={e => {
+            const el = widgetRef.current
+            if (!el) return
+            const rect = el.getBoundingClientRect()
+            const offsetX = e.clientX - rect.left
+            const offsetY = e.clientY - rect.top
+            let moved = false
+            el.style.transition = 'none'
+            el.style.right = 'auto'; el.style.bottom = 'auto'
+            el.style.left = rect.left + 'px'; el.style.top = rect.top + 'px'
+            function onMove(ev: MouseEvent) {
+              moved = true
+              el!.style.left = (ev.clientX - offsetX) + 'px'
+              el!.style.top = (ev.clientY - offsetY) + 'px'
+            }
+            function onUp() {
+              window.removeEventListener('mousemove', onMove, true)
+              window.removeEventListener('mouseup', onUp, true)
+              if (moved) {
+                const r = el!.getBoundingClientRect()
+                const anchor = snapToEdge(r.left, r.top)
+                el!.style.transition = 'left 0.2s, right 0.2s, top 0.2s, bottom 0.2s'
+                applySnap(el!, anchor)
+              } else {
+                setChatSubject((c: any) => c ? null : 'global')
+              }
+            }
+            window.addEventListener('mousemove', onMove, true)
+            window.addEventListener('mouseup', onUp, true)
+          }}
+          style={{
+            width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
+            background: chatSubject ? '#7c3aed' : '#6d28d9',
+            border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(109,40,217,0.45)',
+          }}
+          title={chatSubject ? 'Close AI chat' : 'Ask AI'}
+        >
+          {chatSubject ? <X size={20} color="white" /> : <MessageCircle size={22} color="white" />}
+        </button>
       </div>
     </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <Suspense>
+      <AppShell />
+    </Suspense>
   )
 }
