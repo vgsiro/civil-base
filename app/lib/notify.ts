@@ -1,3 +1,4 @@
+'use client'
 import { supabase } from '@/lib/supabase'
 import type { NotificationType } from '../types'
 

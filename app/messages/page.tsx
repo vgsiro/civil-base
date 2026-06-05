@@ -1,6 +1,5 @@
 'use client'
-export const dynamic = 'force-dynamic'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Send, Search, X, ArrowLeft, Check, CheckCheck,
@@ -52,7 +51,7 @@ function timeAgo(d: string) {
   return new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
 }
 
-export default function MessagesPage() {
+function MessagesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [user, setUser] = useState<User | null>(null)
@@ -493,4 +492,8 @@ export default function MessagesPage() {
       </div>
     </div>
   )
+}
+
+export default function MessagesPageWrapper() {
+  return <Suspense><MessagesPage /></Suspense>
 }

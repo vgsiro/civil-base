@@ -1,3 +1,4 @@
+'use client'
 import { useState, useRef } from 'react'
 
 export function useSidebar() {

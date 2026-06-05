@@ -1,6 +1,5 @@
 'use client'
-export const dynamic = 'force-dynamic'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import {
   ShieldCheck, Users, FileText, BarChart3, Check, X,
@@ -129,7 +128,7 @@ function timeAgo(d: string) {
   return new Date(d).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-export default function AdminPage() {
+function AdminPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [authed, setAuthed] = useState<boolean | null>(null)
@@ -1790,4 +1789,8 @@ function VerifyCard({ req, ordinal, expanded, onToggle, onApprove, onReject }: {
       )}
     </div>
   )
+}
+
+export default function AdminPageWrapper() {
+  return <Suspense><AdminPage /></Suspense>
 }

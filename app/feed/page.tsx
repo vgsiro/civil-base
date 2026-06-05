@@ -1,6 +1,5 @@
 'use client'
-export const dynamic = 'force-dynamic'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Home, Grid2x2, Users, Bookmark, Clock, ChevronDown, GraduationCap, MessageSquarePlus } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
@@ -108,7 +107,7 @@ const CATEGORY_TABS: { value: CategoryFilter; labelKey: import('../i18n/index').
   { value: 'others',       labelKey: 'nav_others',       color: '#65676b', activeColor: '#b45309', activeBg: '#fffbeb', activeBorder: '#fde68a', icon: <IconOthers /> },
 ]
 
-export default function FeedPage() {
+function FeedPage() {
   usePageView('feed')
   const router = useRouter()
   const { t } = useTranslation()
@@ -654,4 +653,8 @@ export default function FeedPage() {
       </div>
     </div>
   )
+}
+
+export default function FeedPageWrapper() {
+  return <Suspense><FeedPage /></Suspense>
 }
