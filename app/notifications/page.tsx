@@ -40,9 +40,12 @@ const TYPE_META: Record<NotificationType, { icon: React.ReactNode; color: string
   follow:           { icon: <UserPlus size={14} color="#10b981" />,              color: '#10b981', bg: '#f0fdf4' },
   verify_approved:  { icon: <BadgeCheck size={14} color="#0369a1" />,            color: '#0369a1', bg: '#e0f2fe' },
   verify_rejected:  { icon: <X size={14} color="#ef4444" />,                     color: '#ef4444', bg: '#fef2f2' },
+  verify_revoked:   { icon: <X size={14} color="#ef4444" />,                     color: '#ef4444', bg: '#fef2f2' },
   mention:          { icon: <AtSign size={14} color="#8b5cf6" />,                color: '#8b5cf6', bg: '#f5f3ff' },
   friend_request:   { icon: <Users size={14} color="#f59e0b" />,                 color: '#f59e0b', bg: '#fffbeb' },
   friend_accepted:  { icon: <Users size={14} color="#10b981" />,                 color: '#10b981', bg: '#f0fdf4' },
+  post_deleted:     { icon: <X size={14} color="#ef4444" />,                     color: '#ef4444', bg: '#fef2f2' },
+  post_warned:      { icon: <X size={14} color="#f59e0b" />,                     color: '#f59e0b', bg: '#fffbeb' },
 }
 
 type Filter = 'all' | 'unread' | NotificationType
