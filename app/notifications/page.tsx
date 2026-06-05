@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Heart, MessageCircle, UserPlus, BadgeCheck, X, Bell, AtSign, Users } from 'lucide-react'
