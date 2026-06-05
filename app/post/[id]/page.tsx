@@ -7,7 +7,7 @@ import {
   Trash2, Pencil, X, BadgeCheck, ChevronDown, ArrowLeft,
   Repeat2, AlertTriangle,
 } from 'lucide-react'
-import { supabase } from '../../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { createNotification } from '../../lib/notify'
 import type { PostWithProfile, PostComment, PostVisibility, Profile } from '../../types'
 import { Avatar, timeAgo, fullTime, useTimeLabels } from '../../components/PostCardHelpers'

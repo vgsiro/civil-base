@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { MessageCircle, Search, X, Plus, ExternalLink, Edit2 } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { Profile } from '../types'
 
 const AVATAR_COLORS = [

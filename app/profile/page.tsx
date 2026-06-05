@@ -1,7 +1,7 @@
 'use client'
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 // /profile is now just a smart redirect.
 // → Has username  : go to /u/[username]

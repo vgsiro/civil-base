@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useState, useEffect } from 'react'
 import { FolderOpen, FileText, Trash2, CheckSquare, Square, MessageCircle, ExternalLink, Pencil, Image, GripVertical } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import MindMapPanel from './MindMapPanel'
 import FormulaPanel from './FormulaPanel'
 import PdfPreviewModal from './PdfPreviewModal'

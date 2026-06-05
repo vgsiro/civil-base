@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { Search, X, LogIn, Rss } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { StorageInfo } from '../types'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
 import AccountMenu from './AccountMenu'

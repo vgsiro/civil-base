@@ -1,6 +1,6 @@
 'use client'
 import { useEffect } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 const SESSION_DURATION_MS = 60 * 60 * 1000 // 1 hour
 

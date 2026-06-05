@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import 'katex/dist/katex.min.css'
 import { PanelLeftOpen, MessageCircle, X } from 'lucide-react'
-import { supabase } from '../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 import { useData } from './hooks/useData'
 import { useSearch } from './hooks/useSearch'

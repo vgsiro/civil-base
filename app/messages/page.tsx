@@ -5,7 +5,7 @@ import {
   Send, Search, X, ArrowLeft, Check, CheckCheck,
   MessageCircle, UserPlus, Plus,
 } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Message, Profile } from '../types'
 

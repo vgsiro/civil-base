@@ -6,7 +6,7 @@ import {
   BadgeCheck, ShieldCheck, MessageCircle,
   UserCheck, UserX, Clock, X,
 } from 'lucide-react'
-import { supabase } from '../../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, ProfileStats, PostWithProfile, FeaturedLink } from '../../types'
 import PostCard from '../../components/PostCard'

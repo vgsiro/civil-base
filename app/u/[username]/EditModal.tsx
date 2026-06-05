@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useScrollLock } from '../../hooks/useScrollLock'
 import { X, Check, Lock, AtSign, Trash2, Plus, BadgeCheck } from 'lucide-react'
-import { supabase } from '../../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, FeaturedLink } from '../../types'
 import { useTranslation } from '../../i18n/LanguageContext'

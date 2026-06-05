@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { Globe, Users, Lock, X, AlertTriangle } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { PostWithProfile, PostVisibility } from '../types'
 import { useTranslation } from '../i18n/LanguageContext'
 

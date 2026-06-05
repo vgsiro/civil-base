@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { X, Upload, ZoomIn, ZoomOut, Check, RotateCcw, Globe, Users, Lock, ChevronDown } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { PostVisibility } from '../types'
 

@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { HelpCircle, FileText, X, Upload, Plus, BarChart2, Globe, Users, Lock, Image as ImageIcon } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { PostType, PostCategory, PostWithProfile, PostVisibility } from '../types'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from '../i18n/LanguageContext'

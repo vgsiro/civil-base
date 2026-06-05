@@ -1,4 +1,4 @@
-import { supabase } from '../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { NotificationType } from '../types'
 
 export async function createNotification({

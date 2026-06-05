@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { Users, Check, X, ExternalLink } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { createNotification } from '../lib/notify'
 
 const AVATAR_COLORS = [

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { BookOpen, Search, X, FileText, Lock, Shield } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useTranslation } from '../i18n/LanguageContext'
 
 // ── Types ─────────────────────────────────────────────────────────────────────

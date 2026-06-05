@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Settings, LogOut, UserCircle, ChevronRight, ChevronLeft, Languages, KeyRound, Eye, EyeOff } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import { useTranslation } from '../i18n/LanguageContext'
 import type { Locale } from '../i18n/index'

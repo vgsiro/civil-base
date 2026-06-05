@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Heart, MessageCircle, UserPlus, BadgeCheck, X, Bell, AtSign, Users } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, Notification, NotificationType } from '../types'
 import AccountMenu from '../components/AccountMenu'

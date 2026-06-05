@@ -4,7 +4,7 @@ import { Search, FileText, ChevronRight, MessageCircle, Send, X, Plus, Trash2, B
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { ChatMessage, ChatSession } from '../types'
 
 // ── Types ────────────────────────────────────────────────────────────────────

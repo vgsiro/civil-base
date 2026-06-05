@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Bell, Heart, MessageCircle, UserPlus, BadgeCheck, X, AtSign, ExternalLink, Users, ShieldAlert, FileWarning, ExternalLink as ExternalLinkIcon } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { Notification, NotificationType } from '../types'
 import { useTranslation } from '../i18n/LanguageContext'
 

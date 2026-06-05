@@ -4,7 +4,7 @@ import { BookOpen, FileText, Hash, Search, Plus, Pencil, Trash2, Check, X, Arrow
 import { useRouter } from 'next/navigation'
 import type { Subject } from '../types'
 import CommunityStats from './CommunityStats'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 const PRESET_COLORS = [
   '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',

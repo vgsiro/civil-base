@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Home, Grid2x2, Users, Bookmark, Clock, ChevronDown, GraduationCap, MessageSquarePlus } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, PostWithProfile, PostCategory } from '../types'
 import { useTranslation } from '../i18n/LanguageContext'

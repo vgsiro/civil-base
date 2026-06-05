@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { searchSiteIndex } from '../lib/siteIndex'
 import type { SearchResult, MindMapNode } from '../types'
 

@@ -1,6 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { createNotification, deleteNotification } from '../lib/notify'
 import type { PostWithProfile, PostVisibility, Profile } from '../types'
 import PostModal from './PostModal'

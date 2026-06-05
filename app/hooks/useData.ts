@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { Subject, Section, Pdf, Formula, MindMap, MindMapNode, LectureMindMap, UploadQueueItem, StorageInfo, RenameState } from '../types'
 
 export function useData() {

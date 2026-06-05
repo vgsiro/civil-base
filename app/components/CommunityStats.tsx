@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { Users, BadgeCheck, FileText, Eye, TrendingUp, ChevronDown, Check, Calendar } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import BigLineChart, { type DaySeries } from './BigLineChart'
 
 // ── Types ─────────────────────────────────────────────────────────────────────

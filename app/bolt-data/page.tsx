@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { Wrench, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 

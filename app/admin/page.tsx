@@ -8,7 +8,7 @@ import {
   Circle, Clock, CheckCircle, XCircle, ImageIcon,
   AlertTriangle, Link2, HelpCircle, Tag, Calendar,
 } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import CommunityStats from '../components/CommunityStats'
 import { createNotification } from '../lib/notify'
 

@@ -1,7 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { X, Send, ImageIcon, Loader2, CheckCircle, Ticket, Plus } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useScrollLock } from '../hooks/useScrollLock'
 import type { User } from '@supabase/supabase-js'
 

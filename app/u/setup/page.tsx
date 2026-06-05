@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, AtSign, Loader2 } from 'lucide-react'
-import { supabase } from '../../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import { useTranslation } from '../../i18n/LanguageContext'
 
 function slugify(input: string): string {

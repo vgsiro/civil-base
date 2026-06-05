@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useState, useEffect } from 'react'
 import { ArrowLeft, Pencil, Trash2 } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import FormulaViewer from './FormulaViewer'
 import type { Section, Formula } from '../types'
 

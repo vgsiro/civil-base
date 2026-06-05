@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react'
 import { useScrollLock } from '../hooks/useScrollLock'
 import { ShieldCheck, BadgeCheck, Upload, X, Check } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 import type { Profile } from '../types'
 import { SPECIALIZATION_KEYS, SPECIALIZATIONS } from '../u/[username]/EditModal'
 

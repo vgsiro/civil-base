@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { Send, X, Minus, Maximize2, Check, CheckCheck } from 'lucide-react'
-import { supabase } from '../../../lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 const AVATAR_COLORS = [
   'linear-gradient(135deg, #3b82f6, #8b5cf6)',

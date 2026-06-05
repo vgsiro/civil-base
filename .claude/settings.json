@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\lib\\\\\" -Recurse -File | Select-Object -ExpandProperty FullName)",
+      "Bash(node -e \"require\\('mathjs'\\); console.log\\('ok'\\)\")",
+      "Bash(npm install *)",
+      "Bash(Get-ChildItem -Path . -Force)",
+      "Bash(npx supabase *)",
+      "Bash(xargs grep -l \"chat_sessions\")",
+      "Bash(grep \"SUPABASE_SERVICE\" .env*)",
+      "Bash(grep \"SUPABASE_SERVICE\" .env.local)",
+      "Bash(ls .env*)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(cd \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\" && sed -i \"s|from '[./]*lib/supabase'|from '@/lib/supabase'|g\" app/admin/page.tsx app/bolt-data/page.tsx app/components/AccountMenu.tsx app/components/AppHeader.tsx app/components/ChatBox.tsx app/components/ChatPanel.tsx app/components/CommunityStats.tsx app/components/CreatePost.tsx app/components/EditPostModal.tsx app/components/FeedbackModal.tsx app/components/FilePanel.tsx app/components/FormulaPanel.tsx app/components/FriendRequestDropdown.tsx app/components/HomePage.tsx app/components/MessageDropdown.tsx app/components/NotificationDropdown.tsx app/components/PhotoModal.tsx app/components/PostCard.tsx app/components/PostModal.tsx app/components/PostModalFromFeed.tsx app/components/VerifyModal.tsx app/feed/page.tsx app/hooks/useAuth.ts app/hooks/useData.ts app/hooks/usePageView.ts app/hooks/useSearch.ts app/lib/notify.ts app/messages/page.tsx app/notifications/page.tsx app/page.tsx app/post/[id]/page.tsx app/profile/page.tsx app/standards/page.tsx app/structural-ai/page.tsx app/u/setup/page.tsx \"app/u/[username]/EditModal.tsx\" \"app/u/[username]/page.tsx\")"
+    ],
+    "additionalDirectories": [
+      "D:\\CODE\\08. Civil Engineering Data\\lecture-notes\\app\\post\\[id]"
+    ]
+  }
+}
