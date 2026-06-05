@@ -1,5 +1,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: sans-serif; background: #f5f5f5; }
+body {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: #f5f5f5;
+}
+body.modal-open { overflow: hidden; }
 [contenteditable] img { max-width: 100%; border-radius: 6px; margin: 4px 0; display: block; }
 [contenteditable] ul, [contenteditable] ol { padding-left: 20px; }
 [contenteditable] li { margin-bottom: 2px; }

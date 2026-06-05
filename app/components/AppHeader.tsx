@@ -1,6 +1,10 @@
 'use client'
-import { Search, X } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Search, X, LogIn, Rss } from 'lucide-react'
+import { supabase } from '../../../lib/supabase'
 import type { StorageInfo } from '../types'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
+import AccountMenu from './AccountMenu'
 
 interface Props {
   storage: StorageInfo | null
@@ -18,14 +22,42 @@ interface Props {
   removeHistoryItem: (i: number) => void
   onSelectResult: (r: any) => void
   onGoHome: () => void
+  user: SupabaseUser | null
+  isAdmin: boolean
+  onSignIn: () => void
+  onSignOut: () => void
 }
+
+// UserMenu replaced by AccountMenu component — see AccountMenu.tsx
 
 export default function AppHeader({
   storage, searchQuery, searchOpen, searchHistory, searchResults,
   searchWrapperRef, searchInputRef,
   onSearch, onSearchFocus, onClearSearch,
   saveToHistory, clearHistory, removeHistoryItem, onSelectResult, onGoHome,
+  user, isAdmin, onSignIn, onSignOut,
 }: Props) {
+  const [profileUsername, setProfileUsername] = useState<string | null>(null)
+  const [profileAvatarColor, setProfileAvatarColor] = useState(0)
+  const [profileDisplayName, setProfileDisplayName] = useState('')
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!user) return
+    const isAdminUser = user.email === 'tranvuong2832@gmail.com'
+    const fallback = isAdminUser ? 'Admin' : (user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User')
+    setProfileDisplayName(fallback)
+    supabase.from('profiles').select('username,avatar_color,avatar_url,display_name,full_name').eq('id', user.id).maybeSingle().then(({ data }) => {
+      if (data) {
+        setProfileUsername(data.username ?? null)
+        setProfileAvatarColor(data.avatar_color ?? 0)
+        setProfileAvatarUrl(data.avatar_url ?? null)
+        if (data.display_name) setProfileDisplayName(data.display_name)
+        else if (data.full_name) setProfileDisplayName(data.full_name)
+      }
+    })
+  }, [user])
+
   const renderName = (name: string) => {
     try {
       const katex = require('katex')
@@ -42,15 +74,26 @@ export default function AppHeader({
       <button onClick={onGoHome} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}
         onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
-        <h1 style={{ fontSize: '18px', fontWeight: '600', color: 'white', margin: 0 }}>⚙️ CivilBase</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src="/logo.png" alt="Civil Base" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+          <h1 style={{ fontSize: '18px', fontWeight: '700', color: 'white', margin: 0 }}>Civil Base</h1>
+        </div>
       </button>
+
+      {/* Feed nav link */}
+      <a href="/feed"
+        style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, fontWeight: 600, color: '#94a3b8', textDecoration: 'none', padding: '6px 10px', borderRadius: 7, background: 'rgba(255,255,255,0.06)', border: '1px solid transparent' }}
+        onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.14)'; (e.currentTarget as HTMLAnchorElement).style.color = '#fff' }}
+        onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.background = 'rgba(255,255,255,0.06)'; (e.currentTarget as HTMLAnchorElement).style.color = '#94a3b8' }}>
+        <Rss size={13} /> Feed
+      </a>
 
       {/* Search */}
       <div style={{ flex: 1, position: 'relative' }} ref={searchWrapperRef}>
         <Search size={16} style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', zIndex: 1 }} />
         <input
           ref={searchInputRef}
-          placeholder="Search across all notes..."
+          placeholder="Search…"
           value={searchQuery}
           onChange={e => onSearch(e.target.value)}
           onFocus={onSearchFocus}
@@ -97,7 +140,7 @@ export default function AppHeader({
 
             {!searchQuery && searchHistory.length === 0 && (
               <div style={{ padding: '24px 14px', textAlign: 'center', color: '#94a3b8', fontSize: '13px' }}>
-                Start typing to search across all notes and formulas
+                {isAdmin ? 'Search lecture notes, formulas & mindmaps' : 'Search is not available for your account'}
               </div>
             )}
 
@@ -123,13 +166,14 @@ export default function AppHeader({
                   )}
                 </div>
                 {searchResults.map((r: any) => {
+                  const isSite = r._type === 'site'
                   const isFormula = r._type === 'formula'
                   const isMindmap = r._type === 'mindmap'
-                  const accentColor = isFormula ? '#f59e0b' : isMindmap ? '#10b981' : '#3b82f6'
-                  const hoverBg = isFormula ? '#fffbeb' : isMindmap ? '#f0fdf4' : '#eff6ff'
-                  const tagBg = isFormula ? '#fef3c7' : isMindmap ? '#dcfce7' : '#dbeafe'
-                  const tagColor = isFormula ? '#92400e' : isMindmap ? '#166534' : '#1e40af'
-                  const tagLabel = isFormula ? 'Formula' : isMindmap ? 'Mindmap' : 'Notes'
+                  const accentColor = isSite ? r.categoryColor : isFormula ? '#f59e0b' : isMindmap ? '#10b981' : '#3b82f6'
+                  const hoverBg = isSite ? '#fffbeb' : isFormula ? '#fffbeb' : isMindmap ? '#f0fdf4' : '#eff6ff'
+                  const tagBg = isSite ? '#fef3c7' : isFormula ? '#fef3c7' : isMindmap ? '#dcfce7' : '#dbeafe'
+                  const tagColor = isSite ? '#92400e' : isFormula ? '#92400e' : isMindmap ? '#166534' : '#1e40af'
+                  const tagLabel = isSite ? r.category : isFormula ? 'Formula' : isMindmap ? 'Mindmap' : 'Notes'
                   return (
                     <div key={r.id} onClick={() => { saveToHistory(searchQuery); onSelectResult(r) }}
                       style={{ padding: '9px 10px', borderRadius: '8px', marginBottom: '5px', borderLeft: `3px solid ${accentColor}`, cursor: 'pointer', display: 'flex', gap: '10px', alignItems: 'flex-start', background: '#f8fafc' }}
@@ -139,7 +183,12 @@ export default function AppHeader({
                         {tagLabel}
                       </span>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        {isFormula ? (
+                        {isSite ? (
+                          <>
+                            <p style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b', marginBottom: '2px' }}>{r.title}</p>
+                            <p style={{ fontSize: '11px', color: '#64748b' }}>{r.description}</p>
+                          </>
+                        ) : isFormula ? (
                           <>
                             <p style={{ fontSize: '11px', color: '#94a3b8', marginBottom: '2px' }}>{(r.sections as any)?.subjects?.name} → {(r.sections as any)?.name}</p>
                             <p style={{ fontSize: '13px', fontWeight: '600', color: '#1e293b' }}>{renderName(r.name)}</p>
@@ -163,25 +212,37 @@ export default function AppHeader({
                     </div>
                   )
                 })}
-                {searchResults.length === 0 && <p style={{ fontSize: '13px', color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>No results found</p>}
+                {searchResults.length === 0 && (
+                  <p style={{ fontSize: '13px', color: '#94a3b8', textAlign: 'center', padding: '16px 0' }}>
+                    {isAdmin ? 'No results found' : 'Search is not available for your account'}
+                  </p>
+                )}
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Storage */}
-      {storage && (
-        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: '3px', minWidth: '140px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '11px', color: '#94a3b8' }}>Storage</span>
-            <span style={{ fontSize: '11px', color: Number(storage.percent) > 80 ? '#fca5a5' : '#94a3b8' }}>{storage.usedMB} MB / {storage.limitGB} GB</span>
-          </div>
-          <div style={{ background: '#334155', borderRadius: '99px', height: '4px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${storage.percent}%`, background: Number(storage.percent) > 80 ? '#ef4444' : '#3b82f6', borderRadius: '99px', transition: 'width 0.3s ease' }} />
-          </div>
-          <div style={{ fontSize: '10px', color: '#475569' }}>{storage.fileCount} files</div>
-        </div>
+
+      {/* Auth */}
+      {user ? (
+        <AccountMenu
+          user={user}
+          avatarColor={profileAvatarColor}
+          avatarUrl={profileAvatarUrl}
+          displayName={profileDisplayName}
+          profileUsername={profileUsername}
+          size={28}
+          dark={true}
+          onSignOut={onSignOut}
+        />
+      ) : (
+        <button onClick={onSignIn}
+          style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, background: '#3b82f6', border: 'none', cursor: 'pointer', color: '#fff', fontSize: 13, fontWeight: 600 }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#2563eb')}
+          onMouseLeave={e => (e.currentTarget.style.background = '#3b82f6')}>
+          <LogIn size={14} /> Sign In
+        </button>
       )}
     </div>
   )

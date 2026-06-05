@@ -1,7 +1,8 @@
 'use client'
-import { useState } from 'react'
-import { Wrench } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Wrench, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '../../../lib/supabase'
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
@@ -435,7 +436,7 @@ function EdgeDistances() {
 }
 
 // ── Bolt Summary ─────────────────────────────────────────────────────────────
-function BoltSummary() {
+function BoltSummary({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [size, setSize] = useState('M20')
   const [grade, setGrade] = useState('8.8')
 
@@ -588,7 +589,13 @@ function BoltSummary() {
         </div>
 
         {/* Right — check panel */}
-        <div style={{ width: 280, flexShrink: 0, borderRadius: 10, border: '2px solid #e2e8f0', overflow: 'hidden', background: '#fff' }}>
+        <div style={{ width: 280, flexShrink: 0, borderRadius: 10, border: '2px solid #e2e8f0', overflow: 'hidden', background: '#fff', position: 'relative' }}>
+          {!isLoggedIn && (
+            <div style={{ position: 'absolute', inset: 0, zIndex: 10, background: 'rgba(248,250,252,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 10 }}>
+              <Lock size={22} color="#64748b" />
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#475569' }}>Sign in to use Design Check</div>
+            </div>
+          )}
           <div style={{ background: '#1e293b', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 15 }}>✅</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Design Check</span>
@@ -684,7 +691,7 @@ function BoltSummary() {
 
 // ── Sections config ────────────────────────────────────────────────────────────
 const SECTIONS = [
-  { id: 'summary',     label: 'Bolt Summary',         emoji: '🔩', component: <BoltSummary /> },
+  { id: 'summary',     label: 'Bolt Summary',         emoji: '🔩' },
   { id: 'material',    label: 'Strength Classes',     emoji: '💪', component: <MaterialProps /> },
   { id: 'dimensions',  label: 'Dimensions & Areas',   emoji: '📐', component: <BoltDimensions /> },
   { id: 'tension',     label: 'Tension Resistance',   emoji: '↕️',  component: <ResistanceTable title="Tensile Resistance Ft,Rd (kN)" subtitle="EN 1993-1-8 — per bolt" data={TENSION_RD} unit="kN" formula="Ft,Rd = k₂ · fub · As / γM2    (k₂ = 0.9)" /> },
@@ -699,6 +706,20 @@ const SECTIONS = [
 export default function DataPage() {
   const router = useRouter()
   const [active, setActive] = useState('summary')
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // Read ?section= param from URL to deep-link to a specific section
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const sec = params.get('section')
+    if (sec && SECTIONS.some(s => s.id === sec)) setActive(sec)
+  }, [])
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => setIsLoggedIn(!!session?.user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => setIsLoggedIn(!!session?.user))
+    return () => subscription.unsubscribe()
+  }, [])
 
   const activeSec = SECTIONS.find(s => s.id === active)!
 
@@ -712,7 +733,7 @@ export default function DataPage() {
           onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
           onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}>
           <span style={{ fontSize: 20 }}>📚</span>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>CivilBase</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#94a3b8' }}>Civil Base</span>
         </button>
         <span style={{ color: '#334155', fontSize: 16 }}>/</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -760,7 +781,7 @@ export default function DataPage() {
 
         {/* Content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
-          {activeSec.component}
+          {active === 'summary' ? <BoltSummary isLoggedIn={isLoggedIn} /> : (activeSec as any).component}
         </div>
       </div>
     </div>

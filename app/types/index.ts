@@ -118,3 +118,168 @@ export interface RenameState {
   code?: string
   category?: string
 }
+
+// ── Community / Social ────────────────────────────────────────────────────────
+
+export interface FeaturedLink {
+  label: string
+  url: string
+}
+
+export interface Profile {
+  id: string
+  username: string
+  family_name: string | null
+  given_name: string | null
+  display_name: string | null
+  full_name: string | null
+  profession: string | null
+  organization: string | null
+  description: string | null
+  location: string | null
+  website: string | null
+  linkedin: string | null
+  experience: string | null
+  specializations: string[] | null
+  featured_links: FeaturedLink[] | null
+  is_verified: boolean
+  pending_profession: string | null
+  pending_specializations: string[] | null
+  avatar_url: string | null
+  cover_url: string | null
+  avatar_color: number
+  created_at: string
+}
+
+export type PostType = 'text' | 'image' | 'link' | 'question' | 'reshare' | 'profile_photo' | 'cover_photo'
+export type PostVisibility = 'public' | 'friends' | 'private' | 'admin_hidden' | 'warn_limited'
+export type PostCategory = 'concrete' | 'steel' | 'composite' | 'geotechnical' | 'others'
+
+export interface Post {
+  id: string
+  user_id: string
+  post_type: PostType
+  visibility: PostVisibility
+  category: PostCategory
+  body: string | null
+  media_url: string | null
+  linked_subject_id: string | null
+  linked_section_id: string | null
+  linked_url: string | null
+  linked_title: string | null
+  is_question: boolean
+  poll_options: string[] | null
+  poll_open: boolean
+  reshared_post_id: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PostAuthor {
+  id: string
+  username: string
+  family_name: string | null
+  given_name: string | null
+  display_name: string | null
+  full_name: string | null
+  profession: string | null
+  specializations: string[] | null
+  is_verified: boolean
+  avatar_color: number
+  avatar_url: string | null
+}
+
+export interface PostWithProfile extends Post {
+  profiles: PostAuthor
+  post_likes: { user_id: string }[]
+  post_comments: { id: string }[]
+  post_recommendations: { user_id: string }[]
+  reshared_post?: PostWithProfile | null
+}
+
+export interface PostComment {
+  id: string
+  post_id: string
+  user_id: string
+  body: string
+  created_at: string
+  profiles: PostAuthor
+  like_count?: number
+  liked_by_me?: boolean
+  replies?: PostComment[]
+}
+
+// ── Messaging ─────────────────────────────────────────────────────────────────
+
+export interface Conversation {
+  id: string
+  created_at: string
+  last_message_at: string
+  participants: ConversationParticipant[]
+  last_message?: Message | null
+  unread_count?: number
+}
+
+export interface ConversationParticipant {
+  conversation_id: string
+  user_id: string
+  last_read_at: string | null
+  profiles: {
+    id: string
+    username: string
+    display_name: string | null
+    full_name: string | null
+    avatar_color: number
+    avatar_url: string | null
+  }
+}
+
+export interface Message {
+  id: string
+  conversation_id: string
+  sender_id: string
+  body: string
+  created_at: string
+  profiles?: {
+    id: string
+    username: string
+    display_name: string | null
+    full_name: string | null
+    avatar_color: number
+    avatar_url: string | null
+  }
+}
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+export type NotificationType = 'like' | 'comment' | 'follow' | 'verify_approved' | 'verify_rejected' | 'verify_revoked' | 'mention' | 'friend_request' | 'friend_accepted' | 'post_deleted' | 'post_warned'
+
+export interface Notification {
+  id: string
+  user_id: string
+  actor_id: string | null
+  type: NotificationType
+  post_id: string | null
+  message: string | null
+  read: boolean
+  created_at: string
+  actor?: {
+    username: string
+    display_name: string | null
+    full_name: string | null
+    avatar_color: number
+    avatar_url: string | null
+  }
+  post?: {
+    body: string | null
+    media_url: string | null
+  }
+}
+
+export interface ProfileStats {
+  user_id: string
+  username: string
+  post_count: number
+  follower_count: number
+  following_count: number
+}

@@ -8,6 +8,7 @@ import { supabase } from '../../lib/supabase'
 import { useData } from './hooks/useData'
 import { useSearch } from './hooks/useSearch'
 import { useSidebar } from './hooks/useSidebar'
+import { useAuth } from './hooks/useAuth'
 
 import AppHeader from './components/AppHeader'
 import SelectModeBar from './components/SelectModeBar'
@@ -17,14 +18,18 @@ import SectionsPanel from './components/SectionsPanel'
 import FilePanel from './components/FilePanel'
 import ChatPanel from './components/ChatPanel'
 import HomePage from './components/HomePage'
+import AuthModal from './components/AuthModal'
 
 function AppShell() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const data = useData()
-  const search = useSearch()
   const sidebar = useSidebar()
+  const auth = useAuth()
+  const isAdmin = auth.user?.email === 'tranvuong2832@gmail.com'
+  const search = useSearch(isAdmin)
 
+  const [showAuthModal, setShowAuthModal] = useState(false)
   const [chatSubject, setChatSubject] = useState<any>(null)
   const widgetRef = useRef<HTMLDivElement>(null)
   // Track snap anchor so panel can be positioned on the correct side
@@ -155,6 +160,11 @@ function AppShell() {
 
   async function handleSelectResult(r: any) {
     search.setSearchOpen(false)
+    if (r._type === 'site') {
+      const url = r.section ? `${r.route}?section=${r.section}` : r.route
+      router.push(url)
+      return
+    }
     if (r._type === 'formula') {
       const subjectId = r.sections?.subject_id
       if (subjectId) {
@@ -229,7 +239,23 @@ function AppShell() {
         removeHistoryItem={search.removeHistoryItem}
         onSelectResult={handleSelectResult}
         onGoHome={goHome}
+        user={auth.user}
+        isAdmin={isAdmin}
+        onSignIn={() => setShowAuthModal(true)}
+        onSignOut={auth.signOut}
       />
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          signIn={async (email, password) => {
+            const err = await auth.signIn(email, password)
+            if (!err) setShowAuthModal(false)
+            return err
+          }}
+          signUp={auth.signUp}
+        />
+      )}
 
       {data.selectMode && (
         <SelectModeBar
@@ -258,6 +284,9 @@ function AppShell() {
           onAddSubject={() => { setShowHome(false); data.setShowAddSubject(true) }}
           onUpdateSubject={data.updateSubject}
           onDeleteSubject={(e, s) => { data.deleteSubject(e, s); }}
+          isLoggedIn={!!auth.user}
+          isAdmin={auth.user?.email === 'tranvuong2832@gmail.com'}
+          onSignIn={() => setShowAuthModal(true)}
         />
       ) : null}
       <div style={{ display: showHome ? 'none' : 'flex', flex: 1, overflow: 'hidden' }}>
@@ -390,14 +419,12 @@ function AppShell() {
       <div
         ref={widgetRef}
         onMouseDown={handleWidgetDrag}
-        style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 201, width: 52, height: 52, cursor: 'grab' }}
+        style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 201, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8, cursor: 'grab' }}
       >
         {chatSubject && (
           <div style={{
             position: 'absolute',
-            // Vertical: open toward whichever side has more space
-            ...(balloonTop === null || balloonTop > window.innerHeight / 2 ? { bottom: 60 } : { top: 60 }),
-            // Horizontal: left-align to balloon, then shift left if panel overflows right edge
+            ...(balloonTop === null || balloonTop > window.innerHeight / 2 ? { bottom: 120 } : { top: 60 }),
             left: 0,
             transform: (() => {
               const balloonLeft = snapAnchor.right !== undefined
@@ -419,6 +446,7 @@ function AppShell() {
             />
           </div>
         )}
+        {/* General AI button */}
         <button
           onMouseDown={e => {
             const el = widgetRef.current
@@ -444,7 +472,7 @@ function AppShell() {
                 el!.style.transition = 'left 0.2s, right 0.2s, top 0.2s, bottom 0.2s'
                 applySnap(el!, anchor)
               } else {
-                setChatSubject((c: any) => c ? null : 'global')
+                setChatSubject((c: any) => (c && c !== 'global' && c?.type !== 'structural') ? null : c ? null : 'global')
               }
             }
             window.addEventListener('mousemove', onMove, true)
@@ -452,14 +480,14 @@ function AppShell() {
           }}
           style={{
             width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
-            background: chatSubject ? '#7c3aed' : '#6d28d9',
+            background: chatSubject && chatSubject?.type !== 'structural' ? '#7c3aed' : '#6d28d9',
             border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 4px 20px rgba(109,40,217,0.45)',
           }}
-          title={chatSubject ? 'Close AI chat' : 'Ask AI'}
+          title={chatSubject && chatSubject?.type !== 'structural' ? 'Close AI chat' : 'Ask AI'}
         >
-          {chatSubject ? <X size={20} color="white" /> : <MessageCircle size={22} color="white" />}
+          {chatSubject && chatSubject?.type !== 'structural' ? <X size={20} color="white" /> : <MessageCircle size={22} color="white" />}
         </button>
       </div>
     </div>

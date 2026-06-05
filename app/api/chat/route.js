@@ -1,33 +1,123 @@
 import { createClient } from '@supabase/supabase-js'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { runCalc } from '../../lib/calc.js'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const supabase = createClient(
+// Module-level client used only for public reads (pdf_chunks, formulas, etc.)
+const supabasePublic = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 )
+
+// Per-request client that carries the user's JWT so auth.uid() resolves in RLS
+function makeUserClient(accessToken) {
+  if (!accessToken) return supabasePublic
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    { global: { headers: { Authorization: `Bearer ${accessToken}` } } }
+  )
+}
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
 
 // Models in priority order — falls back automatically on 429 rate limit
 const MODELS = [
-  'gemini-2.5-flash',   // 5 RPM, 20 RPD — best quality
-  'gemini-2.5-flash-lite', // lighter version, higher limits
-  'gemma-4-31b-it',     // 15 RPM, 1500 RPD
-  'gemma-4-26b-a4b-it', // 15 RPM, 1500 RPD
+  'gemini-2.5-flash',        // 5 RPM, 20 RPD — best quality
+  'gemini-2.5-flash-lite',   // lighter version, higher limits
+  'gemma-4-31b-it',          // 15 RPM, 1500 RPD
+  'gemma-4-26b-a4b-it',      // 15 RPM, 1500 RPD
 ]
 
-export async function POST(req) {
-  const { question, subjectId, subjectName, pdfId, pdfName, history, sessionId } = await req.json()
+const STRUCTURAL_SYSTEM_PROMPT = `You are a structural engineering assistant specializing in
+Eurocode (EN 1990–EN 1999) and Vietnamese standards (TCVN).
 
-  // Determine scope: single PDF, subject, or global
+RULES — follow every time:
+1. CITE THE CLAUSE. Reference the exact clause or table (e.g. "EN 1993-1-1 §6.2.5",
+   "TCVN 5575:2012 Table 7"). Never cite only a page number. If you cannot find a
+   clause in the provided context, say so — do not invent one.
+2. RESPECT THE EDITION. Only use clauses from the code edition present in the
+   retrieved context. If the user pins a version, never mix in another edition.
+3. SYMBOLIC, NOT NUMERIC. When a calculation is needed, do NOT compute the final
+   number yourself. Output the formula and the substituted symbols, then return a
+   machine-readable calc block (see format below). The system computes the result.
+4. SHOW WORK IN LATEX. State the formula in LaTeX, then the substitution with
+   values. Default units: kN, kNm, mm, MPa unless the user specifies otherwise.
+5. VERDICT COMES FROM MATH, NOT YOU. Do not assert PASS/FAIL. Emit the utilisation
+   ratio for the system to evaluate.
+6. SAFETY. End every calculation answer with: "AI assistance — verify against the
+   governing code before use in design."
+
+CALC BLOCK FORMAT — when a numeric check is requested, append a fenced json block:
+\`\`\`calc
+{
+  "clause": "EN 1993-1-1 §6.2.5",
+  "quantity": "M_c,Rd",
+  "formula_latex": "M_{c,Rd} = \\\\frac{W_{pl} f_y}{\\\\gamma_{M0}}",
+  "variables": { "W_pl": {"value": 628000, "unit": "mm^3"},
+                 "f_y":  {"value": 275, "unit": "MPa"},
+                 "gamma_M0": {"value": 1.0, "unit": "-"} },
+  "expression": "(W_pl * f_y) / gamma_M0",
+  "result_unit": "Nmm",
+  "compare": { "demand_expression": "M_Ed", "demand_value": 90e6, "demand_unit": "Nmm" }
+}
+\`\`\`
+Provide ONE calc block per check. Use SI base units inside the block.`
+
+function extractCalcBlocks(text) {
+  const blocks = []
+  const regex = /```calc\s*([\s\S]*?)```/g
+  let match
+  while ((match = regex.exec(text)) !== null) {
+    try {
+      blocks.push(JSON.parse(match[1].trim()))
+    } catch {}
+  }
+  return blocks
+}
+
+function stripCalcBlocks(text) {
+  return text.replace(/```calc[\s\S]*?```/g, '').trim()
+}
+
+export async function POST(req) {
+  const authHeader = req.headers.get('Authorization') || ''
+  const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null
+  const supabase = makeUserClient(accessToken)
+
+  // Decode user ID from the JWT so we can stamp it on assistant message inserts
+  let userId = null
+  if (accessToken) {
+    try {
+      const { data } = await supabase.auth.getUser()
+      userId = data?.user?.id ?? null
+    } catch {}
+  }
+
+  const {
+    question, subjectId, subjectName, pdfId, pdfName,
+    history, sessionId,
+    scope: requestScope, edition,
+    structuralInputs,
+    images,
+  } = await req.json()
+
+  const isStructural = requestScope === 'structural'
+
+  // ── STRUCTURAL PATH ────────────────────────────────────────────────────────
+  if (isStructural) {
+    return handleStructuralChat({
+      question, history, sessionId, userId, edition, structuralInputs, images, supabase,
+    })
+  }
+
+  // ── GENERAL PATH (unchanged) ───────────────────────────────────────────────
   const isSinglePdf = !!pdfId
   const isGlobal = !subjectId && !pdfId
 
   let pdfs = []
-
   if (isSinglePdf) {
     pdfs = [{ id: pdfId, name: pdfName }]
   } else if (isGlobal) {
@@ -45,13 +135,11 @@ export async function POST(req) {
   const pdfIds = pdfs.map(p => p.id)
   const pdfNameMap = Object.fromEntries(pdfs.map(p => [p.id, p.name]))
 
-  // Extract meaningful keywords (skip stop words)
   const stopWords = new Set(['where','what','when','which','find','show','give','tell','how','explain','describe','about','with','from','that','this','have','does','into','more','there','their'])
   const keywords = question.toLowerCase().split(/\W+/).filter(w => w.length > 3 && !stopWords.has(w))
 
   let pdfContext = []
   if (pdfIds.length > 0) {
-    // Try each keyword until we get enough results
     for (const kw of keywords) {
       const { data: chunks } = await supabase
         .from('pdf_chunks')
@@ -73,7 +161,6 @@ export async function POST(req) {
     }
   }
 
-  // Also fetch mind maps for the subject (unless single PDF)
   let mindMapContext = []
   if (!isSinglePdf) {
     let mmQuery = supabase.from('mind_maps').select('title, nodes, section_id')
@@ -86,7 +173,6 @@ export async function POST(req) {
     mindMapContext = maps || []
   }
 
-  // Also search formulas (unless single PDF)
   let formulaContext = []
   if (!isSinglePdf) {
     let formulaQuery = supabase.from('formulas').select('name, content, section_id')
@@ -99,7 +185,6 @@ export async function POST(req) {
       .ilike('name', `%${keywords[0] || question}%`)
       .limit(6)
     formulaContext = formulas || []
-    // If no name match, search content
     if (formulaContext.length === 0) {
       let q2 = supabase.from('formulas').select('name, content, section_id')
       if (!isGlobal) {
@@ -112,7 +197,6 @@ export async function POST(req) {
     }
   }
 
-  // Flatten mind map nodes recursively into bullet text
   function flattenNodes(nodes, depth = 0) {
     if (!nodes?.length) return ''
     return nodes.map(n => {
@@ -134,7 +218,6 @@ export async function POST(req) {
     .map(c => `[Lecture Note: ${pdfNameMap[c.pdf_id] || 'Document'} — Page ${c.page_number}]\n${c.content}`)
     .join('\n\n')
 
-  // Strip HTML tags from formula content for text context
   const stripHtml = (html) => html?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || ''
   const formulaContextText = formulaContext
     .map(f => `[Formula: ${f.name}]\n${stripHtml(f.content)}`)
@@ -146,12 +229,10 @@ export async function POST(req) {
     return Response.json({ error: 'No relevant content found.' }, { status: 400 })
   }
 
-  const scope = isSinglePdf
+  const scopeLabel = isSinglePdf
     ? `the document "${pdfName}"`
     : isGlobal ? 'all lecture notes and formulas' : `the subject "${subjectName}"`
-  const docList = pdfs.map(p => p.name).join(', ')
-
-  const systemPrompt = `You are a helpful study assistant for a civil engineering student. You are answering questions about ${scope}.
+  const systemPrompt = `You are a helpful study assistant for a civil engineering student. You are answering questions about ${scopeLabel}.
 
 When answering, follow this order:
 1. START by scanning the Mind Map context first — it is a structured topic outline built by the student. Use it to identify which topics and lecture pages are relevant to the question.
@@ -191,7 +272,6 @@ ${contextText}`
         const chat = model.startChat({ history: chatHistory })
         const result = await chat.sendMessageStream(question)
 
-        // Send which model is being used (first chunk)
         await writer.write(encoder.encode(`data: ${JSON.stringify({ model: modelName })}\n\n`))
 
         let fullAnswer = ''
@@ -203,7 +283,6 @@ ${contextText}`
           }
         }
 
-        // Parse SOURCES block from the answer
         const sourcesMatch = fullAnswer.match(/\nSOURCES:\n([\s\S]+)$/m)
         const cleanAnswer = sourcesMatch ? fullAnswer.slice(0, sourcesMatch.index).trim() : fullAnswer
         const sources = []
@@ -213,7 +292,6 @@ ${contextText}`
             if (pdfMatch) {
               const name = pdfMatch[1].trim()
               const page = parseInt(pdfMatch[2])
-              // Look up the pdf_id from pdfContext
               const chunk = pdfContext.find(c => (pdfNameMap[c.pdf_id] || '').toLowerCase() === name.toLowerCase() && c.page_number === page)
                 ?? pdfContext.find(c => (pdfNameMap[c.pdf_id] || '').toLowerCase().includes(name.toLowerCase()))
               if (chunk) sources.push({ type: 'pdf', name: pdfNameMap[chunk.pdf_id], page: chunk.page_number, pdf_id: chunk.pdf_id })
@@ -230,31 +308,231 @@ ${contextText}`
         if (sources.length) {
           await writer.write(encoder.encode(`data: ${JSON.stringify({ sources })}\n\n`))
         }
-        // Tell client to replace the displayed answer without the SOURCES block
         if (sourcesMatch) {
           await writer.write(encoder.encode(`data: ${JSON.stringify({ finalAnswer: cleanAnswer })}\n\n`))
         }
 
-        // Save assistant reply server-side (without the SOURCES block)
         if (sessionId && (cleanAnswer || fullAnswer)) {
-          await supabase.from('chat_messages').insert({ session_id: sessionId, role: 'assistant', text: cleanAnswer, model: modelName })
-
+          await supabase.from('chat_messages').insert({
+            session_id: sessionId,
+            role: 'assistant',
+            text: cleanAnswer,
+            model: modelName,
+            ...(userId ? { user_id: userId } : {}),
+          })
           await supabase.from('chat_sessions').update({ updated_at: new Date().toISOString() }).eq('id', sessionId)
-
         }
         await writer.write(encoder.encode(`data: ${JSON.stringify({ done: true, sessionId })}\n\n`))
-        return // success — stop trying
+        return
       } catch (err) {
         lastError = err
         const is429 = err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('rate')
-        if (!is429) break // non-rate-limit error — don't retry other models
-        // else try next model
+        if (!is429) break
       }
     }
     await writer.write(encoder.encode(`data: ${JSON.stringify({ error: lastError?.message || 'All models rate limited. Try again later.' })}\n\n`))
   }
 
-  stream()
+  stream().finally(() => writer.close().catch(() => {}))
+
+  return new Response(readable, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache, no-transform',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    },
+  })
+}
+
+// ── STRUCTURAL HANDLER ────────────────────────────────────────────────────────
+
+async function handleStructuralChat({ question, history, sessionId, userId, edition, structuralInputs, images, supabase }) {
+  const stopWords = new Set(['where','what','when','which','find','show','give','tell','how','explain','describe','about','with','from','that','this','have','does','into','more','there','their'])
+  const keywords = question.toLowerCase().split(/\W+/).filter(w => w.length > 3 && !stopWords.has(w))
+
+  // Retrieve structural chunks (category = 'structural'), with keyword fallback
+  let structuralChunks = []
+  for (const kw of [...keywords, question]) {
+    const { data } = await supabase
+      .from('pdf_chunks')
+      .select('id, pdf_id, page_number, content, code_ref, clause_ref, edition')
+      .eq('category', 'structural')
+      .ilike('content', `%${kw}%`)
+      .order('page_number')
+      .limit(10)
+    if (data && data.length >= 2) { structuralChunks = data; break }
+  }
+  if (structuralChunks.length < 2) {
+    const { data } = await supabase
+      .from('pdf_chunks')
+      .select('id, pdf_id, page_number, content, code_ref, clause_ref, edition')
+      .eq('category', 'structural')
+      .order('page_number')
+      .limit(10)
+    structuralChunks = data || []
+  }
+  if (edition && structuralChunks.length > 0) {
+    const filtered = structuralChunks.filter(c => c.edition === edition)
+    if (filtered.length > 0) structuralChunks = filtered
+  }
+
+  // Fetch golden few-shot examples similar to query
+  let fewShotText = ''
+  try {
+    const { data: examples } = await supabase
+      .from('golden_examples')
+      .select('question, answer')
+      .eq('scope', 'structural')
+      .eq('active', true)
+      .limit(3)
+    if (examples && examples.length > 0) {
+      fewShotText = examples.map(e =>
+        `Example question: ${e.question}\nIdeal answer:\n${e.answer}`
+      ).join('\n\n---\n\n')
+    }
+  } catch {}
+
+  const pdfIds = [...new Set(structuralChunks.map(c => c.pdf_id))]
+  let pdfNameMap = {}
+  if (pdfIds.length > 0) {
+    const { data: pdfRows } = await supabase.from('pdfs').select('id, name').in('id', pdfIds)
+    pdfNameMap = Object.fromEntries((pdfRows || []).map(p => [p.id, p.name]))
+  }
+
+  const retrievedText = structuralChunks.map(c => {
+    const docName = pdfNameMap[c.pdf_id] || 'Standard'
+    const clauseTag = c.clause_ref ? ` [${c.clause_ref}]` : ''
+    const codeTag = c.code_ref ? ` (${c.code_ref}${c.edition ? ', ' + c.edition : ''})` : ''
+    return `[${docName}${codeTag} — Page ${c.page_number}${clauseTag}]\n${c.content}`
+  }).join('\n\n')
+
+  // Build the structural inputs prefix if provided
+  let inputsPrefix = ''
+  if (structuralInputs && Object.keys(structuralInputs).length > 0) {
+    const parts = Object.entries(structuralInputs)
+      .filter(([, v]) => v !== '' && v !== null && v !== undefined)
+      .map(([k, v]) => `${k}=${v}`)
+    if (parts.length > 0) {
+      inputsPrefix = `[Structural inputs] ${parts.join('; ')}\n\n`
+    }
+  }
+
+  const fullQuestion = inputsPrefix + question
+
+  const systemPrompt = STRUCTURAL_SYSTEM_PROMPT + (fewShotText
+    ? `\n\n─── WORKED EXAMPLES (few-shot) ───\n\n${fewShotText}\n\n─── END EXAMPLES ───`
+    : '') + `\n\nRetrieved code clauses and tables:\n\n${retrievedText || '(No structural documents found in the knowledge base yet — answer from general knowledge but note the absence.)'}`
+
+  const chatHistory = (history || [])
+    .filter(m => m.text && m.text.trim())
+    .map(m => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.text }],
+    }))
+
+  const encoder = new TextEncoder()
+  const { readable, writable } = new TransformStream()
+  const writer = writable.getWriter()
+
+  async function stream() {
+    let lastError = null
+    for (const modelName of MODELS) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemPrompt })
+        const chat = model.startChat({ history: chatHistory })
+
+        // Build multipart message if images are attached
+        const messageParts = [{ text: fullQuestion }]
+        if (images && images.length > 0) {
+          for (const dataUrl of images) {
+            const commaIdx = dataUrl.indexOf(',')
+            if (commaIdx === -1) continue
+            const mimeMatch = dataUrl.match(/^data:([^;]+);base64,/)
+            const mimeType = mimeMatch ? mimeMatch[1] : 'image/png'
+            const base64Data = dataUrl.slice(commaIdx + 1)
+            messageParts.push({ inlineData: { mimeType, data: base64Data } })
+          }
+        }
+
+        const result = await chat.sendMessageStream(messageParts)
+
+        await writer.write(encoder.encode(`data: ${JSON.stringify({ model: modelName })}\n\n`))
+
+        let fullAnswer = ''
+        for await (const chunk of result.stream) {
+          const text = chunk.text()
+          if (text) {
+            fullAnswer += text
+            await writer.write(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
+          }
+        }
+
+        // Extract and run calc blocks deterministically
+        const calcBlocks = extractCalcBlocks(fullAnswer)
+        const calcResults = []
+        for (const block of calcBlocks) {
+          try {
+            const result = runCalc(block)
+            calcResults.push({ ...block, ...result })
+          } catch (e) {
+            calcResults.push({ ...block, error: e.message })
+          }
+        }
+
+        // Strip raw calc blocks from displayed prose
+        const cleanAnswer = stripCalcBlocks(fullAnswer)
+
+        if (calcResults.length > 0) {
+          await writer.write(encoder.encode(`data: ${JSON.stringify({ calcResults })}\n\n`))
+        }
+        if (cleanAnswer !== fullAnswer) {
+          await writer.write(encoder.encode(`data: ${JSON.stringify({ finalAnswer: cleanAnswer })}\n\n`))
+        }
+
+        // Log to structural_responses
+        let logId = null
+        try {
+          const retrievedIds = structuralChunks.map(c => c.id)
+          const { data: logRow } = await supabase
+            .from('structural_responses')
+            .insert({
+              question: fullQuestion,
+              scope: 'structural',
+              edition: edition || null,
+              retrieved_ids: retrievedIds,
+              ai_answer: cleanAnswer || fullAnswer,
+              calc_json: calcBlocks.length > 0 ? calcBlocks : null,
+              verified: calcResults.length > 0 ? calcResults : null,
+            })
+            .select('id')
+            .single()
+          logId = logRow?.id || null
+        } catch {}
+
+        if (sessionId && (cleanAnswer || fullAnswer)) {
+          await supabase.from('chat_messages').insert({
+            session_id: sessionId,
+            role: 'assistant',
+            text: cleanAnswer || fullAnswer,
+            model: modelName,
+            ...(userId ? { user_id: userId } : {}),
+          })
+          await supabase.from('chat_sessions').update({ updated_at: new Date().toISOString() }).eq('id', sessionId)
+        }
+
+        await writer.write(encoder.encode(`data: ${JSON.stringify({ done: true, sessionId, responseId: logId })}\n\n`))
+        return
+      } catch (err) {
+        lastError = err
+        const is429 = err.message?.includes('429') || err.message?.includes('quota') || err.message?.includes('rate')
+        if (!is429) break
+      }
+    }
+    await writer.write(encoder.encode(`data: ${JSON.stringify({ error: lastError?.message || 'All models rate limited. Try again later.' })}\n\n`))
+  }
+
+  stream().finally(() => writer.close().catch(() => {}))
 
   return new Response(readable, {
     headers: {

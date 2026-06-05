@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { supabase } from '../../../lib/supabase'
+import { searchSiteIndex } from '../lib/siteIndex'
 import type { SearchResult, MindMapNode } from '../types'
 
 function flattenNodes(nodes: MindMapNode[], query: string, ancestors: string[] = []): { node: MindMapNode; path: string[] }[] {
@@ -13,7 +14,7 @@ function flattenNodes(nodes: MindMapNode[], query: string, ancestors: string[] =
   return results
 }
 
-export function useSearch() {
+export function useSearch(isAdmin = false) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [previewResult, setPreviewResult] = useState<SearchResult | null>(null)
@@ -36,6 +37,17 @@ export function useSearch() {
     setSearchQuery(query)
     setPreviewResult(null)
     if (!query.trim()) { setSearchResults([]); return }
+
+    // Site index — public, available to all users
+    const siteResults = searchSiteIndex(query).map(e => ({ ...e, _type: 'site' as const }))
+
+    // Private content — admin only
+    if (!isAdmin) {
+      setSearchResults(siteResults as any)
+      setSearchOpen(true)
+      return
+    }
+
     const [{ data: chunks }, { data: formulas }, { data: mindMaps }] = await Promise.all([
       supabase.from('pdf_chunks').select('*, pdfs(name, file_url, sections(name, subjects(name)))')
         .ilike('content', `%${query}%`).order('page_number').limit(40),
@@ -47,7 +59,6 @@ export function useSearch() {
     const pdfResults = (chunks || []).map((r: any) => ({ ...r, _type: 'pdf' }))
     const formulaResults = (formulas || []).map((r: any) => ({ ...r, _type: 'formula' }))
 
-    // Flatten all mindmap nodes and filter by query
     const mindmapResults: any[] = []
     for (const mm of (mindMaps || [])) {
       const matches = flattenNodes(mm.nodes || [], query)
@@ -71,7 +82,7 @@ export function useSearch() {
       }
     }
 
-    setSearchResults([...formulaResults, ...mindmapResults.slice(0, 15), ...pdfResults] as any)
+    setSearchResults([...siteResults, ...formulaResults, ...mindmapResults.slice(0, 15), ...pdfResults] as any)
     setSearchOpen(true)
   }
 
