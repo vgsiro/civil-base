@@ -37,6 +37,7 @@ const standards = {
   std_ec_nav_load: 'Load Combinations',
   std_ec_nav_steel: 'Steel (EC3)',
   std_ec_nav_concrete: 'Concrete (EC2)',
+  std_ec_nav_wind: 'Wind (EC1)',
 
   // EC ref — overview
   std_ec_overview_title: 'Eurocode Suite — EN 1990 to EN 1999',

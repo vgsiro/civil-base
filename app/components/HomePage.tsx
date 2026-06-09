@@ -356,6 +356,82 @@ function EurocodeCard() {
   )
 }
 
+// ── EC0 card ──────────────────────────────────────────────────────────────────
+function EC0Card() {
+  return (
+    <CardLink href="/standards?tab=ec0" hoverColor="#6366f1">
+      <div style={{ height: 80, background: 'linear-gradient(135deg, #3730a3, #6366f1)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
+        <ScrollText size={20} color="rgba(255,255,255,0.7)" />
+        <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>EC0</span>
+      </div>
+      <div style={{ padding: '10px 12px 14px' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#3730a3', lineHeight: 1.4, marginBottom: 3 }}>EC0 — Basis of Design</div>
+        <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>Load combinations, partial factors ψ · EN 1990</div>
+        <div style={{ marginTop: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: '#fff', background: '#6366f1', padding: '1px 7px', borderRadius: 8 }}>EUROCODE TOOLS</span>
+        </div>
+      </div>
+    </CardLink>
+  )
+}
+
+// ── EC1 card ──────────────────────────────────────────────────────────────────
+function EC1Card() {
+  return (
+    <CardLink href="/standards?tab=ec1" hoverColor="#0ea5e9">
+      <div style={{ height: 80, background: 'linear-gradient(135deg, #0369a1, #0ea5e9)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
+        <ScrollText size={20} color="rgba(255,255,255,0.7)" />
+        <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>EC1</span>
+      </div>
+      <div style={{ padding: '10px 12px 14px' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#0369a1', lineHeight: 1.4, marginBottom: 3 }}>EC1 — Actions</div>
+        <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>Wind actions · Reference tools & tables · EN 1991</div>
+        <div style={{ marginTop: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: '#fff', background: '#0ea5e9', padding: '1px 7px', borderRadius: 8 }}>EUROCODE TOOLS</span>
+        </div>
+      </div>
+    </CardLink>
+  )
+}
+
+// ── EC2 card ──────────────────────────────────────────────────────────────────
+function EC2Card() {
+  return (
+    <CardLink href="/standards?tab=ec2" hoverColor="#10b981">
+      <div style={{ height: 80, background: 'linear-gradient(135deg, #065f46, #10b981)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
+        <ScrollText size={20} color="rgba(255,255,255,0.7)" />
+        <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>EC2</span>
+      </div>
+      <div style={{ padding: '10px 12px 14px' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#065f46', lineHeight: 1.4, marginBottom: 3 }}>EC2 — Concrete</div>
+        <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>Concrete & rebar grades, material properties · EN 1992</div>
+        <div style={{ marginTop: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: '#fff', background: '#10b981', padding: '1px 7px', borderRadius: 8 }}>EUROCODE TOOLS</span>
+        </div>
+      </div>
+    </CardLink>
+  )
+}
+
+// ── EC3 card ──────────────────────────────────────────────────────────────────
+function EC3Card() {
+  return (
+    <CardLink href="/standards?tab=ec3" hoverColor="#8b5cf6">
+      <div style={{ height: 80, background: 'linear-gradient(135deg, #4c1d95, #8b5cf6)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
+        <ScrollText size={20} color="rgba(255,255,255,0.7)" />
+        <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>EC3</span>
+      </div>
+      <div style={{ padding: '10px 12px 14px' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#4c1d95', lineHeight: 1.4, marginBottom: 3 }}>EC3 — Steel</div>
+        <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>Steel grades, section properties, design values · EN 1993</div>
+        <div style={{ marginTop: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: '#fff', background: '#8b5cf6', padding: '1px 7px', borderRadius: 8 }}>EUROCODE TOOLS</span>
+        </div>
+      </div>
+    </CardLink>
+  )
+}
+
 // ── TCVN card ─────────────────────────────────────────────────────────────────
 function TCVNCard() {
   return (
@@ -524,6 +600,21 @@ export default function HomePage({ stats, subjects, recentSubjects, onSelectSubj
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
           <StructuralAICard isLoggedIn={isLoggedIn} onSignIn={onSignIn} />
           <DesignDataCard />
+        </div>
+        <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
+      </div>
+
+      {/* Eurocode Tools section */}
+      <div style={{ padding: '0 32px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          <div style={{ width: 4, height: 16, borderRadius: 2, background: '#1d4ed8' }} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Eurocode</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
+          <EC0Card />
+          <EC1Card />
+          <EC2Card />
+          <EC3Card />
         </div>
         <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
       </div>

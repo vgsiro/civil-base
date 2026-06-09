@@ -37,6 +37,7 @@ const standards = {
   std_ec_nav_load: 'Tổ hợp tải trọng',
   std_ec_nav_steel: 'Thép (EC3)',
   std_ec_nav_concrete: 'Bê tông (EC2)',
+  std_ec_nav_wind: 'Gió (EC1)',
 
   // EC ref — overview
   std_ec_overview_title: 'Bộ Eurocode — EN 1990 đến EN 1999',
