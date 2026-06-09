@@ -3,10 +3,10 @@ import { useState, useEffect, useRef } from 'react'
 import { Ec2RectInput, Ec2RectResult } from '../rect-engine/rect-calc'
 import { Ec2SlsInput } from '../rect-engine/rect-sls-calc'
 import { RectReport } from './rect-report'
-import RectUlsDetails from './rect-uls-details'
-import RectShearDetails from './rect-shear-details'
-import { RectSlsPanel } from './rect-sls-panel'
-import { ShearSectionDiagram } from './rect-shear-diagram'
+import RectUlsDetails from './uls/rect-uls-details'
+import RectStDetails from './st/rect-st-details'
+import { RectSlsPanel } from './sls/rect-sls-panel'
+import { ShearSectionDiagram } from './st/rect-st-diagram'
 
 export interface ReportMeta {
   project: string
@@ -477,7 +477,7 @@ export function RectExportModal({
           </div>
         </div>
         <div ref={shearDetRef}>
-          <RectShearDetails inp={inp} res={res} />
+          <RectStDetails inp={inp} res={res} />
         </div>
       </div>
     </div>

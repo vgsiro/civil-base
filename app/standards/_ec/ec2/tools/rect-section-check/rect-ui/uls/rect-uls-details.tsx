@@ -1,6 +1,6 @@
 'use client'
-import { DetailGroup, CalcStep, InputDataTable, InputDataRow, Tex } from '../../../../../_lib/ui'
-import { Ec2RectInput, Ec2RectResult } from '../rect-engine/rect-calc'
+import { DetailGroup, CalcStep, InputDataTable, InputDataRow, Tex } from '../../../../../../_lib/ui'
+import { Ec2RectInput, Ec2RectResult } from '../../rect-engine/rect-calc'
 
 function n(v: number, d = 2) { return isFinite(v) ? v.toFixed(d) : '—' }
 function pct(v: number)       { return (v * 100).toFixed(2) }

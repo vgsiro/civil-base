@@ -1,8 +1,8 @@
 'use client'
-import { Ec2RectInput, Ec2RectResult } from '../rect-engine/rect-calc'
-import { Ec2SlsInput, Ec2SlsResult, calcEc2Sls } from '../rect-engine/rect-sls-calc'
+import { Ec2RectInput, Ec2RectResult } from '../../rect-engine/rect-calc'
+import { Ec2SlsInput, Ec2SlsResult, calcEc2Sls } from '../../rect-engine/rect-sls-calc'
 import { RectSlsDetails } from './rect-sls-details'
-import { GREEN, BLUE, RED, AMBER, Box, Row } from '../../../../_shared/ui-atoms'
+import { GREEN, BLUE, RED, AMBER, Box, Row } from '../../../../../_shared/ui-atoms'
 
 const TEAL   = '#0d9488'
 const VIOLET = '#7c3aed'

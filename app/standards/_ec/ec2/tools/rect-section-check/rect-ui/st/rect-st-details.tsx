@@ -1,11 +1,11 @@
 'use client'
-import { DetailGroup, CalcStep, InputDataTable, InputDataRow, Tex } from '../../../../../_lib/ui'
-import { Ec2RectInput, Ec2RectResult } from '../rect-engine/rect-calc'
+import { DetailGroup, CalcStep, InputDataTable, InputDataRow, Tex } from '../../../../../../_lib/ui'
+import { Ec2RectInput, Ec2RectResult } from '../../rect-engine/rect-calc'
 
 function n(v: number, d = 2) { return isFinite(v) ? v.toFixed(d) : '—' }
 const PROSE: React.CSSProperties = { fontSize: 12, color: '#374151', lineHeight: 1.75, margin: '6px 0 10px' }
 
-export default function RectShearDetails({ inp, res }: { inp: Ec2RectInput; res: Ec2RectResult }) {
+export default function RectStDetails({ inp, res }: { inp: Ec2RectInput; res: Ec2RectResult }) {
   const VEd        = inp.VEd ?? 0
   const TEd        = inp.TEd ?? 0
   const hasTorsion = TEd > 0

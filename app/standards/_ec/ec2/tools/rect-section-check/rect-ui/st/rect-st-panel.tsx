@@ -1,10 +1,10 @@
 'use client'
 import { useState } from 'react'
-import { Ec2RectInput, Ec2RectResult } from '../rect-engine/rect-calc'
-import { Box, Row, GREEN, n2 } from '../../../../_shared/ui-atoms'
-import RectShearDetails from './rect-shear-details'
-import { ShearSectionDiagram } from './rect-shear-diagram'
-import { PassFailBar } from './rect-pass-fail-bar'
+import { Ec2RectInput, Ec2RectResult } from '../../rect-engine/rect-calc'
+import { Box, Row, GREEN, n2 } from '../../../../../_shared/ui-atoms'
+import RectStDetails from './rect-st-details'
+import { ShearSectionDiagram } from './rect-st-diagram'
+import { PassFailBar } from '../rect-pass-fail-bar'
 
 const PURPLE = '#8b5cf6'
 const CYAN   = '#0891b2'
@@ -156,7 +156,7 @@ export function ShearPanel({ inp, res }: { inp: Ec2RectInput; res: Ec2RectResult
         </div>
       )}
 
-      {shearDetails && <RectShearDetails inp={inp} res={res} />}
+      {shearDetails && <RectStDetails inp={inp} res={res} />}
     </div>
   )
 }

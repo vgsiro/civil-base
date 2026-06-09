@@ -1,8 +1,8 @@
 'use client'
-import { Ec2RectInput, Ec2RectResult } from '../rect-engine/rect-calc'
-import { Box, Row, GREEN, n2, n4 } from '../../../../_shared/ui-atoms'
-import { SectionDiagram, SpacingClickInfo } from '../../../../_shared/section-diagram'
-import { NMDiagram } from '../../../../_shared/nm-diagram'
+import { Ec2RectInput, Ec2RectResult } from '../../rect-engine/rect-calc'
+import { Box, Row, GREEN, n2, n4 } from '../../../../../_shared/ui-atoms'
+import { SectionDiagram, SpacingClickInfo } from '../../../../../_shared/section-diagram'
+import { NMDiagram } from '../../../../../_shared/nm-diagram'
 
 const PURPLE = '#8b5cf6'
 const AMBER  = '#f59e0b'

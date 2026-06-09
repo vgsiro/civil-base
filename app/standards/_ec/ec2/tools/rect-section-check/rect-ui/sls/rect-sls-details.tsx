@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { DetailGroup, CalcStep, Tex } from '../../../../../_lib/ui'
-import { Ec2RectInput, Ec2RectResult } from '../rect-engine/rect-calc'
-import { Ec2SlsInput, Ec2SlsResult, calcEc2Sls } from '../rect-engine/rect-sls-calc'
+import { DetailGroup, CalcStep, Tex } from '../../../../../../_lib/ui'
+import { Ec2RectInput, Ec2RectResult } from '../../rect-engine/rect-calc'
+import { Ec2SlsInput, Ec2SlsResult, calcEc2Sls } from '../../rect-engine/rect-sls-calc'
 
 function n(x: number, d = 2) { return isFinite(x) ? x.toFixed(d) : '—' }
 

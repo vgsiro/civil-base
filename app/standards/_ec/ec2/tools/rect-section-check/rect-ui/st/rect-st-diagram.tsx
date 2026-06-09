@@ -1,6 +1,6 @@
 'use client'
-import { Ec2RectInput } from '../rect-engine/rect-calc'
-import { GREEN, BLUE } from '../../../../_shared/ui-atoms'
+import { Ec2RectInput } from '../../rect-engine/rect-calc'
+import { GREEN, BLUE } from '../../../../../_shared/ui-atoms'
 
 const ORANGE = '#b45309'
 const RED    = '#dc2626'

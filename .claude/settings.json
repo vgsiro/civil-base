@@ -108,7 +108,8 @@
       "Bash(powershell -Command \"\\(Get-Content 'app/standards/_ec/ec2/tools/rect-section-check/rect-ui/rect-input-panel.tsx'\\) -replace ' title=', ' tip=' | Set-Content 'app/standards/_ec/ec2/tools/rect-section-check/rect-ui/rect-input-panel.tsx' -Encoding utf8\")",
       "Bash(powershell -Command \"Get-Content 'app/standards/_ec/ec2/tools/rect-section-check/rect-ui/rect-input-panel.tsx' -Encoding utf8 | Select-String 'Î|â€|â\"' | Select-Object -First 20\")",
       "Bash(git checkout *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(git mv *)"
     ],
     "additionalDirectories": [
       "D:\\CODE\\08. Civil Engineering Data\\lecture-notes\\app\\post\\[id]",

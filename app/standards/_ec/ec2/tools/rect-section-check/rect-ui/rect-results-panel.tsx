@@ -5,12 +5,12 @@ import { RebarRow } from '../rect-engine/rect-types'
 import { Ec2SlsInput, Ec2SlsResult, calcEc2Sls } from '../rect-engine/rect-sls-calc'
 import { SpacingClickInfo } from '../../../../_shared/section-diagram'
 import { n2 } from '../../../../_shared/ui-atoms'
-import RectUlsDetails from './rect-uls-details'
+import RectUlsDetails from './uls/rect-uls-details'
 import { RectExportModal } from './rect-export-modal'
-import { RectSlsPanel } from './rect-sls-panel'
+import { RectSlsPanel } from './sls/rect-sls-panel'
 import { PassFailBar } from './rect-pass-fail-bar'
-import { ShearPanel } from './rect-shear-panel'
-import { UlsResults } from './rect-uls-results'
+import { ShearPanel } from './st/rect-st-panel'
+import { UlsResults } from './uls/rect-uls-panel'
 
 type SpacingPopover = SpacingClickInfo & { draft: string }
 
