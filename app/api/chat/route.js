@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { runCalc } from '../../lib/calc.js'
+import { runCalc } from '../../_lib/calc.js'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -320,7 +320,7 @@ ${contextText}`
             model: modelName,
             ...(userId ? { user_id: userId } : {}),
           })
-          await supabase.from('chat_sessions').update({ updated_at: new Date().toISOString() }).eq('id', sessionId)
+          await supabase.from('chat_sessions').update({ updated_at: new Date().toISOString() }).eq('id', sessionId) // ts-ok: server-side API route; trigger also stamps now()
         }
         await writer.write(encoder.encode(`data: ${JSON.stringify({ done: true, sessionId })}\n\n`))
         return
@@ -518,7 +518,7 @@ async function handleStructuralChat({ question, history, sessionId, userId, edit
             model: modelName,
             ...(userId ? { user_id: userId } : {}),
           })
-          await supabase.from('chat_sessions').update({ updated_at: new Date().toISOString() }).eq('id', sessionId)
+          await supabase.from('chat_sessions').update({ updated_at: new Date().toISOString() }).eq('id', sessionId) // ts-ok: server-side API route; trigger also stamps now()
         }
 
         await writer.write(encoder.encode(`data: ${JSON.stringify({ done: true, sessionId, responseId: logId })}\n\n`))

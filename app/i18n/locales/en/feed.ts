@@ -2,7 +2,7 @@ const feed = {
   // Sidebar
   sidebar_shortcuts: 'Your shortcuts',
   sidebar_my_profile: 'My Profile',
-  sidebar_lecture_notes: 'Civil Base Lecture Notes',
+  sidebar_lecture_notes: 'CivilAxis Lecture Notes',
   sidebar_bolt_data: 'Bolt Design Data',
   sidebar_complete_profile: 'Complete your profile',
   sidebar_set_username: 'Set your username →',
@@ -56,7 +56,7 @@ const feed = {
   post_btn_repost: 'Repost',
   post_btn_posting: 'Posting…',
   post_link_title_placeholder: 'Title (e.g. Lecture 5 — Retaining Walls)',
-  post_link_url_placeholder: 'URL (paste link to Civil Base note or external)',
+  post_link_url_placeholder: 'URL (paste link to CivilAxis note or external)',
   post_upload_image: 'Click to upload image or diagram',
   post_reposting: 'Reposting',
   post_error_empty: 'Write something first',

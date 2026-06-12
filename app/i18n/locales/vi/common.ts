@@ -1,7 +1,7 @@
 const common = {
   // Nav
   nav_feed: 'Bảng tin',
-  nav_civilbase: 'Civil Base',
+  nav_civilbase: 'CivilAxis',
   nav_community: 'Cộng đồng',
   nav_saved: 'Đã lưu',
   nav_recent: 'Gần đây',
@@ -22,7 +22,7 @@ const common = {
   settings_save: 'Lưu',
   settings_cancel: 'Huỷ',
   settings_sign_out: 'Đăng xuất',
-  settings_footer: 'Civil Base © 2025',
+  settings_footer: 'CivilAxis © 2025',
 
   // Common buttons
   btn_save: 'Lưu',
@@ -31,6 +31,63 @@ const common = {
   btn_saving: 'Đang lưu…',
   btn_delete: 'Xoá',
   btn_confirm: 'Xác nhận',
+
+  // Navbar buttons
+  nav_btn_support: '☕ Ủng hộ',
+  nav_btn_feedback_page: '💬 Phản hồi trang này',
+  nav_btn_feedback: '💬 Gửi phản hồi',
+  nav_btn_feedback_label: 'Gửi phản hồi',
+  nav_btn_community: '🌐 Cộng đồng',
+
+  // Nav confirm modal (leave page)
+  nav_confirm_title: 'Chuyển sang Cộng đồng?',
+  nav_confirm_body: 'Bạn sắp rời khỏi trang này và đến trang Cộng đồng CivilAxis. Công việc chưa lưu có thể bị mất.',
+  nav_confirm_stay: 'Ở lại đây',
+  nav_confirm_go: 'Đến Cộng đồng',
+
+  // Feedback modal
+  fb_title: 'Phản hồi & Hỗ trợ',
+  fb_sub: 'Báo lỗi · Yêu cầu tính năng · Nhận trợ giúp',
+  fb_sub_short: 'Báo lỗi · Yêu cầu tính năng',
+  fb_context_label: 'Phản hồi về trang này',
+  fb_tab_new: 'Tạo phiếu mới',
+  fb_tab_history: 'Phiếu của tôi',
+  fb_field_title: 'Tiêu đề',
+  fb_field_message: 'Nội dung',
+  fb_placeholder_title: 'Vd: Lỗi: tải ảnh thất bại, Tính năng: chế độ tối…',
+  fb_placeholder_message: 'Mô tả chi tiết vấn đề hoặc yêu cầu của bạn…',
+  fb_screenshot: 'Ảnh chụp màn hình',
+  fb_screenshot_optional: '(tuỳ chọn)',
+  fb_upload_hint: 'Nhấn hoặc kéo & thả',
+  fb_submitting_as: 'Gửi với tư cách',
+  fb_btn_submit: 'Gửi phiếu',
+  fb_btn_submitting: 'Đang gửi…',
+  fb_btn_uploading: 'Đang tải ảnh…',
+  fb_open_page: 'Mở trang',
+  fb_submitted_title: 'Đã gửi phiếu!',
+  fb_submitted_body: 'Chúng tôi đã nhận được phản hồi của bạn và sẽ phản hồi sớm nhất.',
+  fb_btn_new_ticket: 'Phiếu mới',
+  fb_btn_view_tickets: 'Xem phiếu của tôi',
+  fb_discard_title: 'Huỷ thay đổi?',
+  fb_discard_body: 'Phiếu của bạn chưa được gửi. Nếu rời đi ngay, các thay đổi sẽ bị mất.',
+  fb_btn_discard: 'Huỷ bỏ',
+  fb_btn_keep_editing: 'Tiếp tục chỉnh sửa',
+  fb_sign_in_hint: 'Đăng nhập để xem phiếu của bạn.',
+  fb_no_tickets_title: 'Chưa có phiếu nào',
+  fb_no_tickets_sub: 'Gửi phiếu và theo dõi tại đây.',
+  fb_btn_create_first: 'Tạo phiếu đầu tiên',
+  fb_status_open: 'Đang mở',
+  fb_status_in_progress: 'Đang xử lý',
+  fb_status_resolved: 'Đã giải quyết',
+  fb_status_closed: 'Đã đóng',
+  fb_reply_badge: 'Phản hồi',
+
+  // Community stats widget
+  cs_title: 'Cộng đồng',
+  cs_total_access: 'Tổng lượt truy cập',
+  cs_total_users: 'Tổng người dùng',
+  cs_new_posts: 'Bài đăng mới',
+  cs_verified: 'Chuyên gia được xác minh',
 } as const
 
 export default common

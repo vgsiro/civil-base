@@ -1,0 +1,58 @@
+const eurocode = {
+  // EC ref — sidebar labels
+  std_ec_nav_overview: 'Overview',
+  std_ec_nav_load: 'Load Combinations',
+  std_ec_nav_steel: 'Steel (EC3)',
+  std_ec_nav_concrete: 'Concrete (EC2)',
+  std_ec_nav_wind: 'Wind (EC1)',
+  // EC ref — overview
+  std_ec_overview_title: 'Eurocode Suite — EN 1990 to EN 1999',
+  std_ec_overview_sub: 'European Standard for structural design published by CEN',
+  std_ec_col_standard: 'Standard',
+  std_ec_col_abbr: 'Abbr.',
+  std_ec_col_title: 'Title',
+  // EC parts titles
+  std_ec_en1990_title: 'Basis of structural design',
+  std_ec_en1991_title: 'Actions on structures',
+  std_ec_en1992_title: 'Design of concrete structures',
+  std_ec_en1993_title: 'Design of steel structures',
+  std_ec_en1994_title: 'Design of composite steel-concrete structures',
+  std_ec_en1995_title: 'Design of timber structures',
+  std_ec_en1996_title: 'Design of masonry structures',
+  std_ec_en1997_title: 'Geotechnical design',
+  std_ec_en1998_title: 'Design of structures for earthquake resistance',
+  std_ec_en1999_title: 'Design of aluminium structures',
+  // EC ref — load combinations
+  std_ec_load_title: 'Partial Factors for Actions — EN 1990 Table A1.2(B)',
+  std_ec_load_sub: 'ULS — STR/GEO design situation',
+  std_ec_load_col_action: 'Action',
+  std_ec_load_col_note: 'Note',
+  std_ec_load_perm_unfav: 'Permanent (unfavourable)',
+  std_ec_load_perm_fav: 'Permanent (favourable)',
+  std_ec_load_var_unfav: 'Variable (unfavourable)',
+  std_ec_load_var_fav: 'Variable (favourable)',
+  std_ec_psi_title: 'ψ Combination Factors — EN 1990 Table A1.1',
+  std_ec_psi_sub: 'Used to reduce variable actions in combinations',
+  std_ec_psi_col_action: 'Variable Action',
+  std_ec_psi_imposed_a: 'Imposed — Cat. A: Domestic',
+  std_ec_psi_imposed_b: 'Imposed — Cat. B: Office',
+  std_ec_psi_imposed_c: 'Imposed — Cat. C: Congregation',
+  std_ec_psi_imposed_d: 'Imposed — Cat. D: Shopping',
+  std_ec_psi_imposed_e: 'Imposed — Cat. E: Storage',
+  std_ec_psi_wind: 'Wind',
+  std_ec_psi_snow: 'Snow (≤1000 m)',
+  std_ec_psi_temp: 'Temperature (non-fire)',
+  std_ec_load_combo_note: 'Fundamental combination (STR):',
+  // EC ref — steel
+  std_ec_steel_title: 'Nominal Values of Steel — EN 1993-1-1 Table 3.1',
+  std_ec_steel_sub: 'Yield strength fy and ultimate tensile strength fu',
+  std_ec_steel_col_grade: 'Grade',
+  std_ec_steel_note: 'γM0 = 1.00 · γM1 = 1.00 · γM2 = 1.25 (recommended values)',
+  // EC ref — concrete
+  std_ec_concrete_title: 'Concrete Strength Classes — EN 1992-1-1 Table 3.1',
+  std_ec_concrete_sub: 'Design values with γc = 1.5 (persistent/transient)',
+  std_ec_concrete_col_class: 'Class',
+  std_ec_concrete_note: 'fcd = αcc·fck/γc = 0.85·fck/1.5 · γc = 1.5 · γs = 1.15',
+} as const
+
+export default eurocode

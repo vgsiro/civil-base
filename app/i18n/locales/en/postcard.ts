@@ -25,6 +25,11 @@ const postcard = {
   action_recommend: 'Recommend',
   action_recommended: 'Recommended',
   action_repost: 'Repost',
+  action_share: 'Share',
+  share_now: 'Share now',
+  share_copy_link: 'Copy link',
+  share_copied: 'Copied!',
+  share_via: 'Share via',
   action_reply: 'Reply',
 
   // Counts

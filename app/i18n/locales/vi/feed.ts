@@ -2,7 +2,7 @@ const feed = {
   // Sidebar
   sidebar_shortcuts: 'Lối tắt của bạn',
   sidebar_my_profile: 'Trang cá nhân',
-  sidebar_lecture_notes: 'Ghi chú Civil Base',
+  sidebar_lecture_notes: 'Ghi chú CivilAxis',
   sidebar_bolt_data: 'Dữ liệu bu lông',
   sidebar_complete_profile: 'Hoàn thiện hồ sơ',
   sidebar_set_username: 'Đặt tên người dùng →',
@@ -56,7 +56,7 @@ const feed = {
   post_btn_repost: 'Đăng lại',
   post_btn_posting: 'Đang đăng…',
   post_link_title_placeholder: 'Tiêu đề (vd: Bài 5 — Tường chắn đất)',
-  post_link_url_placeholder: 'URL (dán liên kết đến ghi chú Civil Base hoặc bên ngoài)',
+  post_link_url_placeholder: 'URL (dán liên kết đến ghi chú CivilAxis hoặc bên ngoài)',
   post_upload_image: 'Nhấn để tải ảnh hoặc sơ đồ',
   post_reposting: 'Đang đăng lại',
   post_error_empty: 'Hãy viết gì đó trước',

@@ -1,7 +1,7 @@
 const common = {
   // Nav
   nav_feed: 'Feed',
-  nav_civilbase: 'Civil Base',
+  nav_civilbase: 'CivilAxis',
   nav_community: 'Community',
   nav_saved: 'Saved',
   nav_recent: 'Recent',
@@ -22,7 +22,7 @@ const common = {
   settings_save: 'Save',
   settings_cancel: 'Cancel',
   settings_sign_out: 'Log out',
-  settings_footer: 'Civil Base © 2025',
+  settings_footer: 'CivilAxis © 2025',
 
   // Common buttons
   btn_save: 'Save',
@@ -31,6 +31,63 @@ const common = {
   btn_saving: 'Saving…',
   btn_delete: 'Delete',
   btn_confirm: 'Confirm',
+
+  // Navbar buttons
+  nav_btn_support: '☕ Support',
+  nav_btn_feedback_page: '💬 Feedback this page',
+  nav_btn_feedback: '💬 Send Feedback',
+  nav_btn_feedback_label: 'Send Feedback',
+  nav_btn_community: '🌐 Community',
+
+  // Nav confirm modal (leave page)
+  nav_confirm_title: 'Go to Community?',
+  nav_confirm_body: "You're about to leave this page and go to the CivilAxis Community feed. Any unsaved work may be lost.",
+  nav_confirm_stay: 'Stay here',
+  nav_confirm_go: 'Go to Community',
+
+  // Feedback modal
+  fb_title: 'Feedback & Support',
+  fb_sub: 'Report bugs · Request features · Get help',
+  fb_sub_short: 'Report bugs · Request features',
+  fb_context_label: 'Feedback about this page',
+  fb_tab_new: 'New Ticket',
+  fb_tab_history: 'My Tickets',
+  fb_field_title: 'Title',
+  fb_field_message: 'Message',
+  fb_placeholder_title: 'e.g. Bug: image upload fails, Feature: dark mode…',
+  fb_placeholder_message: 'Describe the issue or your request in detail…',
+  fb_screenshot: 'Screenshot',
+  fb_screenshot_optional: '(optional)',
+  fb_upload_hint: 'Click or drag & drop',
+  fb_submitting_as: 'Submitting as',
+  fb_btn_submit: 'Submit ticket',
+  fb_btn_submitting: 'Submitting…',
+  fb_btn_uploading: 'Uploading image…',
+  fb_open_page: 'Open page',
+  fb_submitted_title: 'Ticket submitted!',
+  fb_submitted_body: "We've received your feedback and will get back to you soon.",
+  fb_btn_new_ticket: 'New ticket',
+  fb_btn_view_tickets: 'View my tickets',
+  fb_discard_title: 'Discard changes?',
+  fb_discard_body: "Your ticket hasn't been submitted yet. If you leave now, your changes will be lost.",
+  fb_btn_discard: 'Discard',
+  fb_btn_keep_editing: 'Keep editing',
+  fb_sign_in_hint: 'Sign in to see your tickets.',
+  fb_no_tickets_title: 'No tickets yet',
+  fb_no_tickets_sub: 'Submit a ticket and track it here.',
+  fb_btn_create_first: 'Create first ticket',
+  fb_status_open: 'Open',
+  fb_status_in_progress: 'In Progress',
+  fb_status_resolved: 'Resolved',
+  fb_status_closed: 'Closed',
+  fb_reply_badge: 'Reply',
+
+  // Community stats widget
+  cs_title: 'Community',
+  cs_total_access: 'Total access',
+  cs_total_users: 'Total users',
+  cs_new_posts: 'New posts',
+  cs_verified: 'Verified Professionals',
 } as const
 
 export default common

@@ -1,0 +1,58 @@
+const eurocode = {
+  // EC ref — sidebar labels
+  std_ec_nav_overview: 'Tổng quan',
+  std_ec_nav_load: 'Tổ hợp tải trọng',
+  std_ec_nav_steel: 'Thép (EC3)',
+  std_ec_nav_concrete: 'Bê tông (EC2)',
+  std_ec_nav_wind: 'Gió (EC1)',
+  // EC ref — overview
+  std_ec_overview_title: 'Bộ Eurocode — EN 1990 đến EN 1999',
+  std_ec_overview_sub: 'Tiêu chuẩn châu Âu về thiết kế kết cấu do CEN ban hành',
+  std_ec_col_standard: 'Tiêu chuẩn',
+  std_ec_col_abbr: 'Viết tắt',
+  std_ec_col_title: 'Tên tiêu chuẩn',
+  // EC parts titles
+  std_ec_en1990_title: 'Cơ sở thiết kế kết cấu',
+  std_ec_en1991_title: 'Tác động lên kết cấu',
+  std_ec_en1992_title: 'Thiết kế kết cấu bê tông',
+  std_ec_en1993_title: 'Thiết kế kết cấu thép',
+  std_ec_en1994_title: 'Thiết kế kết cấu liên hợp thép-bê tông',
+  std_ec_en1995_title: 'Thiết kế kết cấu gỗ',
+  std_ec_en1996_title: 'Thiết kế kết cấu gạch đá',
+  std_ec_en1997_title: 'Thiết kế địa kỹ thuật',
+  std_ec_en1998_title: 'Thiết kế công trình chịu động đất',
+  std_ec_en1999_title: 'Thiết kế kết cấu nhôm',
+  // EC ref — load combinations
+  std_ec_load_title: 'Hệ số riêng cho tác động — EN 1990 Bảng A1.2(B)',
+  std_ec_load_sub: 'TTGH bền — tình huống thiết kế STR/GEO',
+  std_ec_load_col_action: 'Tác động',
+  std_ec_load_col_note: 'Ghi chú',
+  std_ec_load_perm_unfav: 'Tĩnh tải (bất lợi)',
+  std_ec_load_perm_fav: 'Tĩnh tải (có lợi)',
+  std_ec_load_var_unfav: 'Hoạt tải (bất lợi)',
+  std_ec_load_var_fav: 'Hoạt tải (có lợi)',
+  std_ec_psi_title: 'Hệ số tổ hợp ψ — EN 1990 Bảng A1.1',
+  std_ec_psi_sub: 'Dùng để giảm hoạt tải trong các tổ hợp',
+  std_ec_psi_col_action: 'Hoạt tải biến đổi',
+  std_ec_psi_imposed_a: 'Hoạt tải — Nhóm A: Nhà ở',
+  std_ec_psi_imposed_b: 'Hoạt tải — Nhóm B: Văn phòng',
+  std_ec_psi_imposed_c: 'Hoạt tải — Nhóm C: Hội họp',
+  std_ec_psi_imposed_d: 'Hoạt tải — Nhóm D: Thương mại',
+  std_ec_psi_imposed_e: 'Hoạt tải — Nhóm E: Kho',
+  std_ec_psi_wind: 'Tải gió',
+  std_ec_psi_snow: 'Tải tuyết (≤1000 m)',
+  std_ec_psi_temp: 'Nhiệt độ (không cháy)',
+  std_ec_load_combo_note: 'Tổ hợp cơ bản (STR):',
+  // EC ref — steel
+  std_ec_steel_title: 'Cường độ danh nghĩa của thép — EN 1993-1-1 Bảng 3.1',
+  std_ec_steel_sub: 'Giới hạn chảy fy và giới hạn bền fu',
+  std_ec_steel_col_grade: 'Mác thép',
+  std_ec_steel_note: 'γM0 = 1,00 · γM1 = 1,00 · γM2 = 1,25 (giá trị khuyến nghị)',
+  // EC ref — concrete
+  std_ec_concrete_title: 'Cấp độ bền bê tông — EN 1992-1-1 Bảng 3.1',
+  std_ec_concrete_sub: 'Giá trị tính toán với γc = 1,5 (tình huống thường/tạm thời)',
+  std_ec_concrete_col_class: 'Cấp độ bền',
+  std_ec_concrete_note: 'fcd = αcc·fck/γc = 0,85·fck/1,5 · γc = 1,5 · γs = 1,15',
+} as const
+
+export default eurocode

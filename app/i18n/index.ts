@@ -1,24 +1,18 @@
-import enCommon from './locales/en/common'
-import enFeed from './locales/en/feed'
-import enProfile from './locales/en/profile'
-import enSetup from './locales/en/setup'
-import enPostcard from './locales/en/postcard'
-import enNotifications from './locales/en/notifications'
-import enStandards from './locales/en/standards'
+import en from './locales/en'
+import vi from './locales/vi'
 
-import viCommon from './locales/vi/common'
-import viFeed from './locales/vi/feed'
-import viProfile from './locales/vi/profile'
-import viSetup from './locales/vi/setup'
-import viPostcard from './locales/vi/postcard'
-import viNotifications from './locales/vi/notifications'
-import viStandards from './locales/vi/standards'
+// ── Registry ─────────────────────────────────────────────────────────────────
+// To add a language: create app/i18n/locales/<code>/ (copy the en/ folder, translate the
+// files), then add ONE import above and ONE entry in `translations` + `LANGUAGE_OPTIONS`
+// below. Nothing else in the codebase needs to change — Locale is derived from this object.
+export const translations = { en, vi }
 
-export type Locale = 'en' | 'vi'
+export type Locale = keyof typeof translations
+// Keys come from English (the complete reference); every other locale should mirror them.
+export type TranslationKey = keyof typeof en
 
-export const translations = {
-  en: { ...enCommon, ...enFeed, ...enProfile, ...enSetup, ...enPostcard, ...enNotifications, ...enStandards },
-  vi: { ...viCommon, ...viFeed, ...viProfile, ...viSetup, ...viPostcard, ...viNotifications, ...viStandards },
-}
-
-export type TranslationKey = keyof typeof translations.en
+// Single source of truth for the language switcher (used by AccountMenu, EditModal, …).
+export const LANGUAGE_OPTIONS: { value: Locale; label: string; code: string }[] = [
+  { value: 'en', label: 'English',    code: 'EN' },
+  { value: 'vi', label: 'Tiếng Việt', code: 'VN' },
+]

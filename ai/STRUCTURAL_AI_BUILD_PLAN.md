@@ -1,7 +1,7 @@
 # Structural AI — Build Plan
 
 A prescriptive spec for an AI coding agent (e.g. Claude Code) to implement a
-structural-engineering assistant inside the existing Civil Base app.
+structural-engineering assistant inside the existing CivilAxis app.
 
 > **Governing principle — read first, applies to every phase.**
 > The way this app gets smarter is **not** by retraining the model's weights —

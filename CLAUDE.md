@@ -80,3 +80,13 @@ For every significant task:
 4. Files to Create/Modify
 5. Wait for Approval
 6. Implementation
+
+## Project Conventions
+
+These are enforced by guards and documented in the README — follow them in any new tool/component without being reminded:
+
+* **i18n:** never hardcode user-facing text. Use `const { t } = useTranslation()` and add the key to **every** locale in `app/i18n/locales/<lang>/<namespace>.ts` (tools/standards → `standards` namespace; notes dashboard → `home`). Leave brand/technical tokens and DB/user data as literals. See "Recipe — building a new tool, standard, or component with i18n" in the README.
+* **Timestamps:** any timestamp compared/ordered against a DB value must be server-owned (`default now()`, trigger, or RPC) — never client `new Date()`. See "Timestamps — always server-clock".
+* **Nav badges:** the dropdowns self-seed their counts; pages must not query notification/friend counts and push them down.
+* **Auth in navs:** seed `user` from `getSession()` + cached profile and pass `authChecked`, to avoid the logged-out / avatar flash.
+* **Before finishing any task, run `npm run check`** (timestamps + badges + i18n key parity) and fix anything it flags.

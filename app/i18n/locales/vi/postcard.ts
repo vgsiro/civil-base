@@ -25,6 +25,11 @@ const postcard = {
   action_recommend: 'Đề xuất',
   action_recommended: 'Đã đề xuất',
   action_repost: 'Đăng lại',
+  action_share: 'Chia sẻ',
+  share_now: 'Chia sẻ ngay',
+  share_copy_link: 'Sao chép liên kết',
+  share_copied: 'Đã sao chép!',
+  share_via: 'Chia sẻ qua',
   action_reply: 'Trả lời',
 
   // Counts

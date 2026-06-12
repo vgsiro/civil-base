@@ -1,16 +1,23 @@
 {
-  "name": "lecture-notes",
+  "name": "civilaxis",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:timestamps": "node scripts/check-client-timestamps.mjs",
+    "check:badges": "node scripts/check-badge-seeding.mjs",
+    "check:i18n": "node scripts/check-i18n-keys.mjs",
+    "check": "npm run check:timestamps && npm run check:badges && npm run check:i18n"
   },
   "dependencies": {
+    "@emoji-mart/data": "^1.2.1",
+    "@emoji-mart/react": "^1.1.1",
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.106.2",
+    "emoji-mart": "^5.6.0",
     "katex": "^0.17.0",
     "lucide-react": "^1.17.0",
     "mathjs": "^15.2.0",
