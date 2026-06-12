@@ -3,7 +3,7 @@ const setup = {
   setup_sub: 'Choose a username to get started',
   field_username: 'Username',
   field_username_placeholder: 'e.g. john_engineer',
-  field_username_url_prefix: 'civilbase.com/u/',
+  field_username_url_prefix: 'civilaxis.com/u/',
   username_taken: 'That username is taken',
   username_available: 'Available!',
   btn_continue: 'Continue',

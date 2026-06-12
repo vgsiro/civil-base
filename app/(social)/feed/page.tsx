@@ -22,6 +22,7 @@ import MessageDropdown from '../../_components/social/messaging/MessageDropdown'
 import FriendRequestDropdown from '../../_components/social/messaging/FriendRequestDropdown'
 import ChatBox from '../../_components/social/messaging/ChatBox'
 import FeedbackModal from '../../_components/social/notifications/FeedbackModal'
+import SignInPromptModal from '../../_components/shared/SignInPromptModal'
 
 const AVATAR_COLORS = [
   'linear-gradient(135deg, #3b82f6, #8b5cf6)',
@@ -138,6 +139,8 @@ function FeedPage() {
   // ranked order: array of post IDs from the recommendation API
   const [rankedOrder, setRankedOrder] = useState<string[]>([])
   const [blockedIds, setBlockedIds] = useState<Set<string>>(new Set())
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const [signInPromptAction, setSignInPromptAction] = useState<'like' | 'comment' | 'recommend' | 'share' | 'save' | 'vote' | null>(null)
 
   function openPost(id: string) {
     setOpenPostId(id)
@@ -284,9 +287,13 @@ function FeedPage() {
         setBlockedIds(new Set(blocked))
       }
 
+      const visibilityFilter = authUser
+        ? ['public', 'friends', 'private']
+        : ['public']
       const { data, error } = await supabase
         .from('posts')
         .select('*, profiles!posts_user_id_fkey(id,username,family_name,given_name,display_name,full_name,profession,specializations,is_verified,avatar_color,avatar_url), post_likes(user_id), post_comments(id), post_recommendations(user_id)')
+        .in('visibility', visibilityFilter)
         .order('created_at', { ascending: false })
         .limit(20)
       if (error) console.error('feed query error:', error.message, error.details)
@@ -303,9 +310,11 @@ function FeedPage() {
     if (!hasMore || loadingMore || posts.length === 0) return
     setLoadingMore(true)
     const cursor = posts[posts.length - 1].created_at
+    const visibilityFilter = userRef.current ? ['public', 'friends', 'private'] : ['public']
     const { data } = await supabase
       .from('posts')
       .select('*, profiles!posts_user_id_fkey(id,username,family_name,given_name,display_name,full_name,profession,specializations,is_verified,avatar_color,avatar_url), post_likes(user_id), post_comments(id), post_recommendations(user_id)')
+      .in('visibility', visibilityFilter)
       .order('created_at', { ascending: false })
       .lt('created_at', cursor)
       .limit(20)
@@ -318,6 +327,17 @@ function FeedPage() {
     setHasMore(more.length === 20)
     setLoadingMore(false)
   }, [hasMore, loadingMore, posts])
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) loadMore() },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [loadMore])
 
   function handlePostCreated(post: PostWithProfile) {
     setPosts(prev => [post, ...prev])
@@ -385,6 +405,7 @@ function FeedPage() {
 
       {/* Feedback modal */}
       {showFeedback && <FeedbackModal user={user} onClose={() => setShowFeedback(false)} />}
+      {signInPromptAction && <SignInPromptModal action={signInPromptAction} onClose={() => setSignInPromptAction(null)} />}
 
       {/* ── Floating ChatBoxes ── */}
       {user && (() => {
@@ -398,8 +419,8 @@ function FeedPage() {
       })()}
 
       {/* ── Post modal triggered from notification ── */}
-      {openPostId && user && (
-        <PostModalFromFeed postId={openPostId} currentUserId={user.id} onClose={closePost} />
+      {openPostId && (
+        <PostModalFromFeed postId={openPostId} currentUserId={user?.id ?? null} onClose={closePost} />
       )}
 
       {/* ═══ TOP NAV BAR ═══ */}
@@ -446,25 +467,31 @@ function FeedPage() {
           )}
 
           {/* Main nav */}
-          {MAIN_NAV_DEF.map(item => (
-            <a key={item.labelKey} href={item.href}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', borderRadius: 8,
-                textDecoration: 'none', background: item.active ? '#e7f3ff' : 'transparent',
-              }}
-              onMouseEnter={e => { if (!item.active) (e.currentTarget as HTMLAnchorElement).style.background = '#e4e6eb' }}
-              onMouseLeave={e => { if (!item.active) (e.currentTarget as HTMLAnchorElement).style.background = 'transparent' }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: item.active ? item.bg : '#e4e6eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: item.active ? '#fff' : item.bg }}>{item.icon}</span>
-              </div>
-              <span style={{ fontSize: 15, fontWeight: item.active ? 700 : 500, color: item.active ? '#3b82f6' : '#050505' }}>
-                {t(item.labelKey)}
-              </span>
-            </a>
-          ))}
+          {MAIN_NAV_DEF.map(item => {
+            const requiresAuth = !item.active && (item.href === '/saved' || item.href === '/recents')
+            const handleClick = requiresAuth && !user
+              ? (e: React.MouseEvent) => { e.preventDefault(); setSignInPromptAction('save') }
+              : undefined
+            return (
+              <a key={item.labelKey} href={item.href} onClick={handleClick}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', borderRadius: 8,
+                  textDecoration: 'none', background: item.active ? '#e7f3ff' : 'transparent',
+                }}
+                onMouseEnter={e => { if (!item.active) (e.currentTarget as HTMLAnchorElement).style.background = '#e4e6eb' }}
+                onMouseLeave={e => { if (!item.active) (e.currentTarget as HTMLAnchorElement).style.background = 'transparent' }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: item.active ? item.bg : '#e4e6eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ color: item.active ? '#fff' : item.bg }}>{item.icon}</span>
+                </div>
+                <span style={{ fontSize: 15, fontWeight: item.active ? 700 : 500, color: item.active ? '#3b82f6' : '#050505' }}>
+                  {t(item.labelKey)}
+                </span>
+              </a>
+            )
+          })}
 
           {/* Feedback / Send ticket */}
-          <button onClick={() => setShowFeedback(true)}
+          <button onClick={() => { if (!user) { setSignInPromptAction('comment'); return } setShowFeedback(true) }}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left' as const, width: '100%' }}
             onMouseEnter={e => { e.currentTarget.style.background = '#e4e6eb' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}>
@@ -496,9 +523,9 @@ function FeedPage() {
           ) : (
             <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e4e6eb', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#e4e6eb', flexShrink: 0 }} />
-              <button onClick={() => router.push('/')}
+              <button onClick={() => setSignInPromptAction('comment')}
                 style={{ flex: 1, textAlign: 'left' as const, padding: '10px 16px', borderRadius: 20, border: '1px solid #e4e6eb', background: '#f0f2f5', color: '#65676b', fontSize: 15, cursor: 'pointer' }}>
-                Sign in to share your knowledge…
+                {t('post_sign_in_prompt')}
               </button>
             </div>
           )}
@@ -571,11 +598,13 @@ function FeedPage() {
             })()
           )}
 
-          {!loading && hasMore && posts.length > 0 && (
-            <button onClick={loadMore} disabled={loadingMore}
-              style={{ padding: '12px', borderRadius: 8, border: 'none', background: '#fff', color: '#3b82f6', fontSize: 14, fontWeight: 700, cursor: 'pointer', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-              {loadingMore ? t('feed_loading_more') : t('feed_see_more')}
-            </button>
+          {/* Infinite scroll sentinel */}
+          <div ref={sentinelRef} style={{ height: 1 }} />
+          {loadingMore && (
+            <div style={{ textAlign: 'center' as const, padding: '16px 0', color: '#65676b', fontSize: 14 }}>{t('feed_loading_more')}</div>
+          )}
+          {!hasMore && posts.length > 0 && (
+            <div style={{ textAlign: 'center' as const, padding: '16px 0', color: '#bcc0c4', fontSize: 13 }}>{t('feed_end')}</div>
           )}
         </div>
 

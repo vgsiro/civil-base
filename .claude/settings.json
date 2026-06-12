@@ -216,7 +216,12 @@
       "Bash(git -C \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\" diff HEAD -- \"app/i18n/locales/en/standards.ts\")",
       "Bash(git -C \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\" status --short)",
       "Bash(node -e \"const p=require\\('path'\\); console.log\\(p.relative\\('app/\\(home\\)/standards/_ec/_shared', 'app/i18n/LanguageContext.tsx'\\)\\)\")",
-      "Bash(del \"app\\\\icon.png\")"
+      "Bash(del \"app\\\\icon.png\")",
+      "Bash(git commit *)",
+      "Bash(dir /s /b \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\*username*\")",
+      "Bash(dir /s /b \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\_components\\\\social\\\\post\\\\*.tsx\")",
+      "Bash(dir /s /b \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\_components\\\\social\\\\post\\\\Poll*\")",
+      "Bash(xargs grep -l -i \"donat\")"
     ],
     "additionalDirectories": [
       "D:\\CODE\\08. Civil Engineering Data\\lecture-notes\\app\\post\\[id]",

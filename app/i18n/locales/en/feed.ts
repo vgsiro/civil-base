@@ -24,6 +24,7 @@ const feed = {
   feed_category_empty_sub: 'Be the first to post about',
   feed_see_more: 'See more posts',
   feed_loading_more: 'Loading…',
+  feed_end: "You've seen all posts",
 
   // Create post
   post_placeholder_text: 'Share knowledge, insights, or updates…',

@@ -24,6 +24,7 @@ const feed = {
   feed_category_empty_sub: 'Hãy là người đầu tiên đăng về',
   feed_see_more: 'Xem thêm bài đăng',
   feed_loading_more: 'Đang tải…',
+  feed_end: 'Bạn đã xem hết tất cả bài đăng',
 
   // Create post
   post_placeholder_text: 'Chia sẻ kiến thức, nhận xét hoặc cập nhật…',

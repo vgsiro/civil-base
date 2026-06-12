@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { createNotification } from '../../../_lib/notify'
 import type { PostWithProfile, PostComment, PostVisibility, Profile } from '../../../_types'
 import VerifyModal from '../../../_components/shared/VerifyModal'
+import SignInPromptModal from '../../../_components/shared/SignInPromptModal'
 import EditPostModal from './EditPostModal'
 import { Avatar, timeAgo, fullTime, useTimeLabels } from './PostCardHelpers'
 import { QuotedPost } from './PostCard'
@@ -148,6 +149,7 @@ export default function PostModal({ post, currentUserId, currentUserIsVerified, 
   const [menuOpenCommentId, setMenuOpenCommentId] = useState<string | null>(null)
   const [hoveredCommentId, setHoveredCommentId] = useState<string | null>(null)
   const [showVerifyPrompt, setShowVerifyPrompt] = useState(false)
+  const [signInPromptAction, setSignInPromptAction] = useState<'like' | 'comment' | 'recommend' | 'share' | 'save' | 'vote' | null>(null)
   const [deleting, setDeleting] = useState(false)
   const commentsEndRef = useRef<HTMLDivElement>(null)
 
@@ -652,20 +654,21 @@ export default function PostModal({ post, currentUserId, currentUserIsVerified, 
           )}
 
           <div style={{ padding: '4px 10px', borderBottom: '1px solid #f0f2f5', display: 'flex', gap: 2, flexShrink: 0 }}>
-            <button onClick={() => onLikeToggle(post.id, liked)} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 8, border: 'none', background: 'none', cursor: currentUserId ? 'pointer' : 'default', fontSize: 13, color: liked ? '#ef4444' : '#64748b', fontWeight: liked ? 700 : 400 }}
-              onMouseEnter={e => { if (currentUserId) e.currentTarget.style.background = '#fef2f2' }}
+            <button onClick={() => { if (!currentUserId) { setSignInPromptAction('like'); return } onLikeToggle(post.id, liked) }}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: liked ? '#ef4444' : '#64748b', fontWeight: liked ? 700 : 400 }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
               <Heart size={16} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#94a3b8'} />
               {t('action_like')}
             </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b' }}
+            <button onClick={() => { if (!currentUserId) { setSignInPromptAction('comment'); return } document.getElementById(`modal-comment-input-${post.id}`)?.focus() }}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
-              onClick={() => document.getElementById(`modal-comment-input-${post.id}`)?.focus()}>
+              onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
               <MessageCircle size={16} color="#94a3b8" /> {t('action_comment')}
             </button>
             {post.post_type !== 'profile_photo' && post.post_type !== 'cover_photo' && (
-              <button onClick={() => { if (!currentUserId || !currentUserIsVerified) { setShowVerifyPrompt(true); return } onRecommendToggle(post.id, recommended) }}
+              <button onClick={() => { if (!currentUserId) { setSignInPromptAction('recommend'); return } if (!currentUserIsVerified) { setShowVerifyPrompt(true); return } onRecommendToggle(post.id, recommended) }}
                 title={t('recommend_title')}
                 style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: recommended ? '#0369a1' : '#64748b', fontWeight: recommended ? 700 : 400 }}
                 onMouseEnter={e => { e.currentTarget.style.background = '#e0f2fe' }}
@@ -676,6 +679,7 @@ export default function PostModal({ post, currentUserId, currentUserIsVerified, 
             )}
           </div>
           {showVerifyPrompt && <VerifyPromptModal onClose={() => setShowVerifyPrompt(false)} currentUser={currentUser} currentProfile={currentProfile} />}
+          {signInPromptAction && <SignInPromptModal action={signInPromptAction} onClose={() => setSignInPromptAction(null)} />}
 
           <div style={{ flexShrink: 0, maxHeight: '22%', overflowY: 'auto', padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 12 }}>
             {comments.length > 1 && <CommentSortDropdown value={commentSort} onChange={setCommentSort} />}
@@ -882,7 +886,7 @@ export default function PostModal({ post, currentUserId, currentUserIsVerified, 
             <div ref={commentsEndRef} />
           </div>
 
-          {currentUserId && (
+          {currentUserId ? (
             <div style={{ padding: '10px 14px', borderTop: '1px solid #f0f2f5', display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
               <Avatar name={currentUserProfile?.display_name ?? null} colorIndex={currentUserProfile?.avatar_color ?? 0} photoUrl={currentUserProfile?.avatar_url} size={32} />
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#f0f2f5', borderRadius: 20, overflow: 'hidden', padding: '0 4px 0 14px' }}>
@@ -895,6 +899,13 @@ export default function PostModal({ post, currentUserId, currentUserIsVerified, 
                   <Send size={14} color={commentDraft.trim() ? '#fff' : '#94a3b8'} />
                 </button>
               </div>
+            </div>
+          ) : (
+            <div style={{ padding: '10px 14px', borderTop: '1px solid #f0f2f5', flexShrink: 0 }}>
+              <button onClick={() => setSignInPromptAction('comment')}
+                style={{ width: '100%', padding: '9px 16px', borderRadius: 20, border: '1px solid #e2e8f0', background: '#f0f2f5', color: '#65676b', fontSize: 13, cursor: 'pointer', textAlign: 'left' as const }}>
+                {t('guest_prompt_comment')}
+              </button>
             </div>
           )}
         </div>

@@ -11,6 +11,7 @@ import PostModal from './PostModal'
 import { VerifyPromptModal } from './PostModal'
 import EditPostModal from './EditPostModal'
 import PostModalFromFeed from './PostModalFromFeed'
+import SignInPromptModal from '../../shared/SignInPromptModal'
 import { useTranslation } from '../../../i18n/LanguageContext'
 
 // ── Quoted reshare ────────────────────────────────────────────────────────────
@@ -410,6 +411,7 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [showVerifyPrompt, setShowVerifyPrompt] = useState(false)
+  const [signInPromptAction, setSignInPromptAction] = useState<'like' | 'comment' | 'recommend' | 'share' | 'save' | 'vote' | null>(null)
   const [expanded, setExpanded] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showSaveModal, setShowSaveModal] = useState(false)
@@ -486,7 +488,8 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
   }, [post.id, hasPoll, currentUserId])
 
   async function castVote(optionIndex: number) {
-    if (!currentUserId || votedOption !== null || pollLoading) return
+    if (!currentUserId) { setSignInPromptAction('vote'); return }
+    if (votedOption !== null || pollLoading) return
     setPollLoading(true)
     const isPro = !!(currentProfile?.is_verified && currentProfile?.profession)
     let { error } = await supabase.from('post_votes').insert({ post_id: post.id, user_id: currentUserId, option_index: optionIndex, is_professional: isPro })
@@ -564,6 +567,7 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
           onLikeToggle={onLikeToggle} onRecommendToggle={onRecommendToggle ?? (() => {})} onEdited={onEdited} onDeleted={onDeleted} />
       )}
       {showVerifyPrompt && <VerifyPromptModal onClose={() => setShowVerifyPrompt(false)} currentUser={currentUser} currentProfile={currentProfile} />}
+      {signInPromptAction && <SignInPromptModal action={signInPromptAction} onClose={() => setSignInPromptAction(null)} />}
       {showEdit && (
         <EditPostModal post={post} onClose={() => setShowEdit(false)}
           onSaved={(body, visibility) => { setShowEdit(false); onEdited?.(post.id, body, visibility) }} />
@@ -927,9 +931,9 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
 
         {/* Action bar */}
         <div style={{ borderTop: '1px solid #f1f5f9', padding: '6px 10px', display: 'flex', gap: 2 }}>
-          <button onClick={() => onLikeToggle(post.id, liked)}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: currentUserId ? 'pointer' : 'default', fontSize: 13, color: liked ? '#ef4444' : '#64748b', fontWeight: liked ? 600 : 400 }}
-            onMouseEnter={e => { if (currentUserId) e.currentTarget.style.background = '#fef2f2' }}
+          <button onClick={() => { if (!currentUserId) { setSignInPromptAction('like'); return } onLikeToggle(post.id, liked) }}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: liked ? '#ef4444' : '#64748b', fontWeight: liked ? 600 : 400 }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
             <Heart size={15} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#94a3b8'} />
             {likeCount > 0 ? likeCount : ''} {t('action_like')}
@@ -942,7 +946,7 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
             {commentCount > 0 ? commentCount : ''} {t('action_comment')}
           </button>
           {!isPhotoPost && (
-            <button onClick={() => { if (!currentUserId || !currentUserIsVerified) { setShowVerifyPrompt(true); return } onRecommendToggle?.(post.id, recommended) }}
+            <button onClick={() => { if (!currentUserId) { setSignInPromptAction('recommend'); return } if (!currentUserIsVerified) { setShowVerifyPrompt(true); return } onRecommendToggle?.(post.id, recommended) }}
               title={t('recommend_title')}
               style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: recommended ? '#0369a1' : '#64748b', fontWeight: recommended ? 600 : 400 }}
               onMouseEnter={e => { e.currentTarget.style.background = '#e0f2fe' }}
@@ -951,13 +955,13 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
               {recommendCount > 0 ? recommendCount : ''} {recommended ? t('action_recommended') : t('action_recommend')}
             </button>
           )}
-          <button onClick={() => { if (!currentUserId) { setShowVerifyPrompt(true); return } setShowShareModal(true) }}
+          <button onClick={() => { if (!currentUserId) { setSignInPromptAction('share'); return } setShowShareModal(true) }}
             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b' }}
             onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
             <Share2 size={15} color="#94a3b8" /> {t('action_share')}
           </button>
-          <button onClick={() => { if (!currentUserId) { setShowVerifyPrompt(true); return } setShowSaveModal(true) }}
+          <button onClick={() => { if (!currentUserId) { setSignInPromptAction('save'); return } setShowSaveModal(true) }}
             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b', marginLeft: 'auto' }}
             onMouseEnter={e => { e.currentTarget.style.background = '#f0f7ff' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>

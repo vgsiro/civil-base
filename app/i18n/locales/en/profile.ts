@@ -88,7 +88,7 @@ const profile = {
 
   // Edit form fields
   field_username: 'Username (your unique URL)',
-  field_username_url_prefix: 'civilbase.com/u/',
+  field_username_url_prefix: 'civilaxis.com/u/',
   field_username_taken: 'That username is taken',
   field_username_current: 'This is your current username — type to change it',
   field_given_name: 'Given name',

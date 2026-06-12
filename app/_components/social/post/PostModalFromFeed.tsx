@@ -7,7 +7,7 @@ import PostModal from './PostModal'
 
 interface Props {
   postId: string
-  currentUserId: string
+  currentUserId: string | null
   onClose: () => void
 }
 
@@ -23,12 +23,14 @@ export default function PostModalFromFeed({ postId, currentUserId, onClose }: Pr
       .single()
       .then(({ data }) => setPost(data as PostWithProfile))
 
-    supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', currentUserId)
-      .maybeSingle()
-      .then(({ data }) => setCurrentProfile(data as Profile | null))
+    if (currentUserId) {
+      supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUserId)
+        .maybeSingle()
+        .then(({ data }) => setCurrentProfile(data as Profile | null))
+    }
   }, [postId, currentUserId])
 
   if (!post) return null
@@ -38,10 +40,11 @@ export default function PostModalFromFeed({ postId, currentUserId, onClose }: Pr
       post={post}
       currentUserId={currentUserId}
       currentUserIsVerified={currentProfile?.is_verified ?? false}
-      currentUser={{ id: currentUserId }}
+      currentUser={currentUserId ? { id: currentUserId } : null}
       currentProfile={currentProfile}
       onClose={onClose}
       onLikeToggle={(id, wasLiked) => {
+        if (!currentUserId) return
         setPost(prev => prev ? {
           ...prev,
           post_likes: wasLiked
@@ -57,6 +60,7 @@ export default function PostModalFromFeed({ postId, currentUserId, onClose }: Pr
         }
       }}
       onRecommendToggle={(id, wasRecommended) => {
+        if (!currentUserId) return
         setPost(prev => prev ? {
           ...prev,
           post_recommendations: wasRecommended

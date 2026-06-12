@@ -73,6 +73,14 @@ const postcard = {
   recommend_verify_btn: 'Xác minh chuyên môn',
   recommend_sign_in_btn: 'Đăng nhập để xác minh',
   recommend_close: 'Đóng',
+  guest_prompt_title: 'Tham gia CivilAxis',
+  guest_prompt_like: 'Đăng nhập để thích bài đăng và bày tỏ sự ủng hộ.',
+  guest_prompt_comment: 'Đăng nhập để bình luận và tham gia thảo luận.',
+  guest_prompt_recommend: 'Đăng nhập để đề xuất bài đăng cho cộng đồng.',
+  guest_prompt_share: 'Đăng nhập để chia sẻ bài đăng.',
+  guest_prompt_save: 'Đăng nhập để lưu bài đăng vào bộ sưu tập.',
+  guest_prompt_vote: 'Đăng nhập để bình chọn trong cuộc thăm dò này.',
+  guest_prompt_btn_signin: 'Đăng nhập',
 } as const
 
 export default postcard

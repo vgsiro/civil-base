@@ -84,7 +84,7 @@ export default function AuthModal({ onClose, signIn, signUp }: Props) {
         {/* Header */}
         <div style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', padding: '20px 24px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', letterSpacing: '0.1em' }}>CIVILBASE</div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', letterSpacing: '0.1em' }}>CIVILAXIS</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{mode === 'signin' ? t('home_auth_sign_in') : t('home_auth_sign_up')}</div>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 4 }}

@@ -6,16 +6,16 @@ import HomeFooter from '../../_components/shared/HomeFooter'
 const DONATE_CONFIG = {
   heading: 'Support CivilAxis',
   subheading: 'CivilAxis is free and always will be. If it saves you time or helps your work, a coffee goes a long way ☕',
-  paypalUrl: '',           // e.g. 'https://paypal.me/yourname'
-  qrImageUrl: '',          // e.g. '/donate-qr.png' — drop image in /public
-  bankDetails: '',         // e.g. 'BSB 062-000 · Account 1234 5678 · Tran Nguyen Vuong'
-  otherNote: '',           // any extra text shown at the bottom
+  paypalUrl: 'https://paypal.me/tranvuong2832',
+  paypalQrUrl: '/donate/paypal-qr.jpeg',
+  paynowQrUrl: '/donate/paynow-qr.jpeg',
+  bankDetails: '',
+  otherNote: '',
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function DonatePage() {
-  const { heading, subheading, paypalUrl, qrImageUrl, bankDetails, otherNote } = DONATE_CONFIG
-  const hasAnyMethod = paypalUrl || qrImageUrl || bankDetails
+  const { heading, subheading, paypalUrl, paypalQrUrl, paynowQrUrl, bankDetails, otherNote } = DONATE_CONFIG
 
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
@@ -64,21 +64,21 @@ export default function DonatePage() {
             </div>
           )}
 
-          {/* QR code */}
-          {qrImageUrl ? (
-            <div style={{ padding: '24px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textAlign: 'center' as const }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#475569', marginBottom: 16, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Scan to donate</div>
-              <img src={qrImageUrl} alt="Donation QR code" style={{ width: 180, height: 180, borderRadius: 12, border: '1px solid #e2e8f0', objectFit: 'contain' as const }} />
-            </div>
-          ) : (
-            <div style={{ padding: '24px', background: '#f8fafc', border: '1.5px dashed #e2e8f0', borderRadius: 14, textAlign: 'center' as const, opacity: 0.5 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>QR Code</div>
-              <div style={{ width: 120, height: 120, borderRadius: 12, background: '#e2e8f0', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ fontSize: 36 }}>📷</span>
+          {/* QR codes */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            {paypalQrUrl && (
+              <div style={{ padding: '20px 16px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textAlign: 'center' as const }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 12, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>PayPal QR</div>
+                <img src={paypalQrUrl} alt="PayPal QR code" style={{ width: '100%', maxWidth: 160, borderRadius: 10, border: '1px solid #e2e8f0', objectFit: 'contain' as const }} />
               </div>
-              <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 10 }}>Add your QR image path in the config</div>
-            </div>
-          )}
+            )}
+            {paynowQrUrl && (
+              <div style={{ padding: '20px 16px', background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textAlign: 'center' as const }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#475569', marginBottom: 12, textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>PayNow (SG)</div>
+                <img src={paynowQrUrl} alt="PayNow QR code" style={{ width: '100%', maxWidth: 160, borderRadius: 10, border: '1px solid #e2e8f0', objectFit: 'contain' as const }} />
+              </div>
+            )}
+          </div>
 
           {/* Bank / direct transfer */}
           {bankDetails && (

@@ -3,7 +3,7 @@ const setup = {
   setup_sub: 'Chọn tên người dùng để bắt đầu',
   field_username: 'Tên người dùng',
   field_username_placeholder: 'vd: nguyen_kientruc',
-  field_username_url_prefix: 'civilbase.com/u/',
+  field_username_url_prefix: 'civilaxis.com/u/',
   username_taken: 'Tên người dùng này đã được dùng',
   username_available: 'Có thể dùng!',
   btn_continue: 'Tiếp tục',

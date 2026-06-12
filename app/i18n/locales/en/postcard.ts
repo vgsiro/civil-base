@@ -73,6 +73,14 @@ const postcard = {
   recommend_verify_btn: 'Verify as a Professional',
   recommend_sign_in_btn: 'Sign in to verify',
   recommend_close: 'Close',
+  guest_prompt_title: 'Join CivilAxis',
+  guest_prompt_like: 'Sign in to like posts and show your support.',
+  guest_prompt_comment: 'Sign in to leave a comment and join the discussion.',
+  guest_prompt_recommend: 'Sign in to recommend posts to the community.',
+  guest_prompt_share: 'Sign in to share and reshare posts.',
+  guest_prompt_save: 'Sign in to save posts to your collections.',
+  guest_prompt_vote: 'Sign in to vote in this poll.',
+  guest_prompt_btn_signin: 'Sign in',
 } as const
 
 export default postcard

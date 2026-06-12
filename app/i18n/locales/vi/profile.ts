@@ -88,7 +88,7 @@ const profile = {
 
   // Edit form fields
   field_username: 'Tên người dùng (URL của bạn)',
-  field_username_url_prefix: 'civilbase.com/u/',
+  field_username_url_prefix: 'civilaxis.com/u/',
   field_username_taken: 'Tên người dùng này đã được dùng',
   field_username_current: 'Đây là tên người dùng hiện tại của bạn — nhập để thay đổi',
   field_given_name: 'Tên',

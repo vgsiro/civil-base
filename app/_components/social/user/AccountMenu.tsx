@@ -247,7 +247,7 @@ export default function AccountMenu({ user, profile, avatarColor = 0, avatarUrl,
               <div style={{ height: 1, background: '#e4e6eb', margin: '4px 0' }} />
 
               <div style={{ padding: '4px 8px' }}>
-                {menuItem(<UserCircle size={19} color="#050505" />, t('settings_view_profile'), profileUsername ? `civilbase.com/u/${profileUsername}` : t('settings_view_profile_sub'), () => { router.push(profileHref); close() })}
+                {menuItem(<UserCircle size={19} color="#050505" />, t('settings_view_profile'), profileUsername ? `civilaxis.com/u/${profileUsername}` : t('settings_view_profile_sub'), () => { router.push(profileHref); close() })}
                 {menuItem(<Settings size={19} color="#050505" />, t('settings'), t('settings_language_sub'), openSettings)}
               </div>
 
