@@ -26,7 +26,7 @@ function AppShell() {
   const data = useData()
   const sidebar = useSidebar()
   const auth = useAuth()
-  useEffect(() => { document.title = 'Lecture Notes — CivilAxis' }, [])
+  useEffect(() => { document.title = 'CivilAxis' }, [])
   const isAdmin = auth.user?.email === 'tranvuong2832@gmail.com'
   const search = useSearch(isAdmin)
 
