@@ -5,20 +5,20 @@ import 'katex/dist/katex.min.css'
 import { PanelLeftOpen, MessageCircle, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 
-import { useData } from './hooks/useData'
-import { useSearch } from './hooks/useSearch'
-import { useSidebar } from './hooks/useSidebar'
-import { useAuth } from './hooks/useAuth'
+import { useData } from './(home)/subjects/_hooks/useData'
+import { useSearch } from './(home)/subjects/_hooks/useSearch'
+import { useSidebar } from './(home)/subjects/_hooks/useSidebar'
+import { useAuth } from './_hooks/useAuth'
 
-import AppHeader from './components/AppHeader'
-import SelectModeBar from './components/SelectModeBar'
-import PreviewModal from './components/PreviewModal'
-import SubjectsPanel from './components/SubjectsPanel'
-import SectionsPanel from './components/SectionsPanel'
-import FilePanel from './components/FilePanel'
-import ChatPanel from './components/ChatPanel'
-import HomePage from './components/HomePage'
-import AuthModal from './components/AuthModal'
+import AppHeader from './(home)/subjects/_components/shell/AppHeader'
+import SelectModeBar from './(home)/subjects/_components/shell/SelectModeBar'
+import PreviewModal from './(home)/subjects/_components/pdf/PreviewModal'
+import SubjectsPanel from './(home)/subjects/_components/panels/SubjectsPanel'
+import SectionsPanel from './(home)/subjects/_components/panels/SectionsPanel'
+import FilePanel from './(home)/subjects/_components/panels/FilePanel'
+import ChatPanel from './(home)/subjects/_components/content/ChatPanel'
+import HomePage from './(home)/subjects/_components/shell/HomePage'
+import AuthModal from './(home)/subjects/_components/shell/AuthModal'
 
 function AppShell() {
   const router = useRouter()
@@ -26,8 +26,10 @@ function AppShell() {
   const data = useData()
   const sidebar = useSidebar()
   const auth = useAuth()
+  useEffect(() => { document.title = 'Lecture Notes — CivilAxis' }, [])
   const isAdmin = auth.user?.email === 'tranvuong2832@gmail.com'
   const search = useSearch(isAdmin)
+
 
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [chatSubject, setChatSubject] = useState<any>(null)
@@ -320,7 +322,7 @@ function AppShell() {
                 onAddSubject={data.addSubject}
                 renameState={data.renaming}
                 renameInputRef={data.renameInputRef}
-                onRenameChange={(name, code, category) => data.setRenaming(r => r ? { ...r, name, ...(code !== undefined ? { code } : {}), ...(category !== undefined ? { category } : {}) } : r)}
+                onRenameChange={(name, code, category) => data.setRenaming((r: import('./_types').RenameState | null) => r ? { ...r, name, ...(code !== undefined ? { code } : {}), ...(category !== undefined ? { category } : {}) } : r)}
                 onRenameKey={data.handleRenameKey}
                 onRenameBlur={data.commitRename}
                 onCollapse={() => sidebar.setSubjectCollapsed(true)}
@@ -366,7 +368,7 @@ function AppShell() {
                 onToggleAddSection={() => data.setShowAddSection(!data.showAddSection)}
                 onAddSection={data.addSection}
                 renameInputRef={data.renameInputRef}
-                onRenameChange={name => data.setRenaming(r => r ? { ...r, name } : r)}
+                onRenameChange={name => data.setRenaming((r: import('./_types').RenameState | null) => r ? { ...r, name } : r)}
                 onRenameKey={data.handleRenameKey}
                 onRenameBlur={data.commitRename}
                 onCollapse={() => sidebar.setSectionCollapsed(true)}
@@ -494,9 +496,11 @@ function AppShell() {
   )
 }
 
+export const dynamic = 'force-dynamic'
+
 export default function Home() {
   return (
-    <Suspense>
+    <Suspense fallback={<div style={{ background: '#f8fafc', minHeight: '100vh' }} />}>
       <AppShell />
     </Suspense>
   )

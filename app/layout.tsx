@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CivilAxis",
+  title: { default: "CivilAxis", template: "%s — CivilAxis" },
   description: "Civil engineering reference — lecture notes, design data, calculations and code.",
 };
 
