@@ -1,4 +1,8 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
+/* Always reserve the vertical scrollbar gutter so centered layouts don't shift left/right
+   when content grows tall enough to add a scrollbar (the F5 layout-shift flash). */
+html, body { height: 100%; overflow: hidden; }
+html { scrollbar-gutter: stable; }
 .row-label sub { font-size: 0.75em; }
 .katex-formula-wrap::-webkit-scrollbar { display: none; }
 .katex-formula-wrap .katex-html .base { display: inline !important; width: auto !important; }

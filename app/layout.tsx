@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Civil Base",
+  title: "CivilAxis",
   description: "Civil engineering reference — lecture notes, design data, calculations and code.",
 };
 
@@ -30,7 +30,7 @@ export default function RootLayout({
       lang="en"
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="h-full flex flex-col">
         <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
