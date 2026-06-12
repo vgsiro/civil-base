@@ -117,6 +117,11 @@ body.modal-open { overflow: hidden; }
   .homenav-logo-text { display: none !important; }
   .homenav-extra-btn { display: none !important; }
   .homenav-breadcrumb { display: none !important; }
+
+  /* Unit Converter: hide sidebar, show select dropdown */
+  .uc-sidebar { display: none !important; }
+  .uc-mobile-cat { display: block !important; padding: 10px 14px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+  .uc-fields { grid-template-columns: 1fr !important; padding: 16px 14px 80px !important; }
 }
 
 @media (min-width: 769px) {

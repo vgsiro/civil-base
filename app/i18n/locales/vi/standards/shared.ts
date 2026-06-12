@@ -20,6 +20,11 @@ const shared = {
   std_tools_label: 'CÔNG CỤ KỸ THUẬT',
   std_tools_title: 'Thư viện công cụ thiết kế',
 
+  // General tools
+  std_general_tools_label: 'CÔNG CỤ CHUNG',
+  std_unit_converter_label: 'Đổi đơn vị',
+  std_unit_converter_desc: 'Chiều dài · Diện tích · Lực · Áp suất · Mô men · Khối lượng · Nhiệt độ · Góc',
+
   // Sub-tabs
   std_subtab_pdfs_ec: 'Tiêu chuẩn PDF',
   std_subtab_pdfs_tcvn: 'Tiêu chuẩn PDF',

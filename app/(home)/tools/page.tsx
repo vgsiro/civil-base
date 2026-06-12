@@ -1,11 +1,52 @@
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Search } from 'lucide-react'
+import { BookOpen, Search, Ruler } from 'lucide-react'
+import Link from 'next/link'
 import HomeNavBar from '../../_components/shared/HomeNavBar'
 import { useTranslation } from '../../i18n/LanguageContext'
 
 import { ToolGroup, CARD_W, CARD_IMG_H } from '../standards/_ec/_shared/tool-card-grid'
+
+// ── General tools catalogue ───────────────────────────────────────────────────
+interface GeneralTool {
+  id: string
+  href: string
+  label: string
+  desc: string
+  ref: string
+  accent: string
+  gradient: string
+  graphic: React.ReactNode
+}
+
+const GENERAL_TOOLS: GeneralTool[] = [
+  {
+    id: 'unit-converter',
+    href: '/tools/general-tools/unit-converter',
+    label: 'Unit Converter',
+    desc: 'Length · Area · Force · Pressure · Moment · Mass · Temperature · Angle',
+    ref: 'GENERAL TOOLS',
+    accent: '#f97316',
+    gradient: 'linear-gradient(135deg, #c2410c, #f97316)',
+    graphic: (
+      <svg width="90" height="65" viewBox="0 0 90 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="14" width="32" height="12" rx="2" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5"/>
+        <text x="24" y="23" fontSize="8" fill="rgba(255,255,255,0.95)" fontWeight="700" textAnchor="middle">kN·m</text>
+        <line x1="42" y1="20" x2="50" y2="20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeDasharray="2 2"/>
+        <polygon points="52,20 48,17 48,23" fill="rgba(255,255,255,0.6)"/>
+        <line x1="52" y1="20" x2="58" y2="20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5"/>
+        <rect x="58" y="14" width="24" height="12" rx="2" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.85)" strokeWidth="1.5"/>
+        <text x="70" y="23" fontSize="8" fill="rgba(255,255,255,0.95)" fontWeight="700" textAnchor="middle">kip·ft</text>
+        <rect x="8" y="34" width="32" height="12" rx="2" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
+        <text x="24" y="43" fontSize="8" fill="rgba(255,255,255,0.7)" fontWeight="600" textAnchor="middle">MPa</text>
+        <line x1="42" y1="40" x2="58" y2="40" stroke="rgba(255,255,255,0.3)" strokeWidth="1" strokeDasharray="2 2"/>
+        <rect x="58" y="34" width="24" height="12" rx="2" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.5)" strokeWidth="1"/>
+        <text x="70" y="43" fontSize="8" fill="rgba(255,255,255,0.7)" fontWeight="600" textAnchor="middle">psi</text>
+      </svg>
+    ),
+  },
+]
 
 // ── All tools catalogue — add new tools here as they are built ────────────────
 const ALL_TOOL_GROUPS: (ToolGroup & { tab: string; label: string; accentColor: string; accentBg: string })[] = [
@@ -151,6 +192,14 @@ export default function ToolsPage() {
     ),
   })).filter(g => g.cards.length > 0)
 
+  const filteredGeneral = GENERAL_TOOLS.filter(tool =>
+    !q ||
+    tool.label.toLowerCase().includes(q) ||
+    tool.desc.toLowerCase().includes(q)
+  )
+
+  const hasResults = filteredGroups.length > 0 || filteredGeneral.length > 0
+
   return (
     <div style={{ height: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Header */}
@@ -193,47 +242,87 @@ export default function ToolsPage() {
       <div style={{ flex: 1, overflowY: 'auto', padding: '32px 32px 0' }}>
         <div style={{ maxWidth: 1100, display: 'flex', flexDirection: 'column', gap: 40 }}>
 
-          {filteredGroups.length === 0 ? (
+          {!hasResults ? (
             <div style={{ textAlign: 'center', paddingTop: 80, color: '#94a3b8' }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>🔍</div>
               <div style={{ fontWeight: 600, color: '#1e293b', marginBottom: 4 }}>No tools found</div>
               <div style={{ fontSize: 13 }}>Try a different search term</div>
             </div>
           ) : (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ width: 4, height: 18, borderRadius: 2, background: '#1d4ed8' }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Eurocode</span>
-              <span style={{ fontSize: 11, color: '#94a3b8' }}>EN 1990 · EN 1991 · EN 1992 · EN 1993</span>
-              {q && <span style={{ fontSize: 11, color: '#6366f1', marginLeft: 4 }}>— {filteredGroups.reduce((s, g) => s + g.cards.length, 0)} result{filteredGroups.reduce((s, g) => s + g.cards.length, 0) !== 1 ? 's' : ''}</span>}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+
+              {/* Eurocode section */}
+              {filteredGroups.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <div style={{ width: 4, height: 18, borderRadius: 2, background: '#1d4ed8' }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>Eurocode</span>
+                    <span style={{ fontSize: 11, color: '#94a3b8' }}>EN 1990 · EN 1991 · EN 1992 · EN 1993</span>
+                    {q && <span style={{ fontSize: 11, color: '#6366f1', marginLeft: 4 }}>— {filteredGroups.reduce((s, g) => s + g.cards.length, 0)} result{filteredGroups.reduce((s, g) => s + g.cards.length, 0) !== 1 ? 's' : ''}</span>}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+                    {[...filteredGroups]
+                      .sort((a, b) => a.part.localeCompare(b.part))
+                      .flatMap(group => group.cards.map(card => ({ card, group })))
+                      .map(({ card, group }) => (
+                        <button key={`${group.tab}-${card.id}`}
+                          onClick={() => handleSelect(group.tab, card.id)}
+                          style={{ width: CARD_W, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left', padding: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'box-shadow 0.15s, transform 0.15s', flexShrink: 0 }}
+                          onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 6px 20px ${card.accent}30`; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                          onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none' }}>
+                          <div style={{ height: CARD_IMG_H, background: card.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                            {card.graphic}
+                            <span style={{ position: 'absolute', top: 8, right: 10, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+                              {card.ref}
+                            </span>
+                          </div>
+                          <div style={{ padding: '11px 14px 14px' }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: group.accentColor, background: group.accentBg, display: 'inline-block', padding: '2px 8px', borderRadius: 6, letterSpacing: '0.04em', marginBottom: 6, marginLeft: -8 }}>
+                              {group.part}
+                            </div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: card.accent, marginBottom: 4 }}>{card.label}</div>
+                            <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>{card.desc}</div>
+                          </div>
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* General Tools section */}
+              {filteredGeneral.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                    <div style={{ width: 4, height: 18, borderRadius: 2, background: '#f97316' }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#1e293b' }}>General Tools</span>
+                    <span style={{ fontSize: 11, color: '#94a3b8' }}>Unit conversion · code-agnostic utilities</span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
+                    {filteredGeneral.map(tool => (
+                      <Link key={tool.id} href={tool.href}
+                        style={{ width: CARD_W, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left', padding: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'box-shadow 0.15s, transform 0.15s', flexShrink: 0, textDecoration: 'none', display: 'block' }}
+                        onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 6px 20px ${tool.accent}30`; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                        onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none' }}>
+                        <div style={{ height: CARD_IMG_H, background: tool.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                          {tool.graphic}
+                          <span style={{ position: 'absolute', top: 8, right: 10, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
+                            {tool.ref}
+                          </span>
+                        </div>
+                        <div style={{ padding: '11px 14px 14px' }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#f97316', background: '#fff7ed', display: 'inline-block', padding: '2px 8px', borderRadius: 6, letterSpacing: '0.04em', marginBottom: 6, marginLeft: -8 }}>
+                            GENERAL
+                          </div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: tool.accent, marginBottom: 4 }}>{tool.label}</div>
+                          <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>{tool.desc}</div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14 }}>
-              {[...filteredGroups]
-                .sort((a, b) => a.part.localeCompare(b.part))
-                .flatMap(group => group.cards.map(card => ({ card, group })))
-                .map(({ card, group }) => (
-                  <button key={`${group.tab}-${card.id}`}
-                    onClick={() => handleSelect(group.tab, card.id)}
-                    style={{ width: CARD_W, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left', padding: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'box-shadow 0.15s, transform 0.15s', flexShrink: 0 }}
-                    onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 6px 20px ${card.accent}30`; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                    onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none' }}>
-                    <div style={{ height: CARD_IMG_H, background: card.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-                      {card.graphic}
-                      <span style={{ position: 'absolute', top: 8, right: 10, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>
-                        {card.ref}
-                      </span>
-                    </div>
-                    <div style={{ padding: '11px 14px 14px' }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: group.accentColor, background: group.accentBg, display: 'inline-block', padding: '2px 8px', borderRadius: 6, letterSpacing: '0.04em', marginBottom: 6, marginLeft: -8 }}>
-                        {group.part}
-                      </div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: card.accent, marginBottom: 4 }}>{card.label}</div>
-                      <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>{card.desc}</div>
-                    </div>
-                  </button>
-                ))}
-            </div>
-          </div>
           )}
 
 

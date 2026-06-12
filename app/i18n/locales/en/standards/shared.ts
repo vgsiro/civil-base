@@ -20,6 +20,11 @@ const shared = {
   std_tools_label: 'ENGINEERING TOOLS',
   std_tools_title: 'Design Tools Library',
 
+  // General tools
+  std_general_tools_label: 'GENERAL TOOLS',
+  std_unit_converter_label: 'Unit Converter',
+  std_unit_converter_desc: 'Length · Area · Force · Pressure · Moment · Mass · Temperature · Angle',
+
   // Sub-tabs
   std_subtab_overview: 'Overview',
   std_subtab_ref_ec: 'Reference Tools',
