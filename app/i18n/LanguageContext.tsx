@@ -22,11 +22,46 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    // Read localStorage synchronously in the first effect tick, set locale,
-    // then mark ready so children render with the correct locale from the start.
     const saved = localStorage.getItem(STORAGE_KEY) as Locale | null
-    if (saved && saved in translations) setLocaleState(saved as Locale)
-    setReady(true)
+
+    if (saved && saved in translations) {
+      // User has an explicit saved preference — use it, skip all detection.
+      setLocaleState(saved as Locale)
+      setReady(true)
+      syncDb()
+      return
+    }
+
+    // No saved preference: detect from browser language then IP geo.
+    async function detectAndInit() {
+      let detected: Locale | null = null
+
+      // 1. Browser language (instant, no network)
+      const browserLang = navigator.language?.toLowerCase() ?? ''
+      if (browserLang.startsWith('vi')) detected = 'vi'
+
+      // 2. IP geo via Vercel header (only if browser gave no signal)
+      if (!detected) {
+        try {
+          const res = await fetch('/api/locale-hint')
+          if (res.ok) {
+            const { locale } = await res.json()
+            if (locale && locale in translations) detected = locale as Locale
+          }
+        } catch {
+          // network error — stay with default
+        }
+      }
+
+      if (detected) {
+        setLocaleState(detected)
+        // Don't persist to localStorage — let the user make an explicit choice
+      }
+      setReady(true)
+      syncDb()
+    }
+
+    detectAndInit()
 
     async function syncDb() {
       const { data: { session } } = await supabase.auth.getSession()
@@ -42,7 +77,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem(STORAGE_KEY, dbLocale)
       }
     }
-    syncDb()
   }, [])
 
   const setLocale = useCallback(async (l: Locale) => {
