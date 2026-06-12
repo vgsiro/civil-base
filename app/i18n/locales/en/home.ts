@@ -129,6 +129,7 @@ const home = {
   home_stat_posts: 'Posts',
 
   // ── Section headers ──────────────────────────────────────────────────────────
+  home_section_recent: 'Recent',
   home_section_engineering_tools: 'Engineering Tools',
   home_section_eurocode: 'Eurocode',
   home_section_my_subjects: 'My Subjects',
@@ -157,6 +158,7 @@ const home = {
   home_card_ec3_desc: 'Steel grades, section properties, design values · EN 1993',
 
   // ── Toolbar (admin) ──────────────────────────────────────────────────────────
+  home_search_all_placeholder: 'Search tools, Eurocode, subjects…',
   home_search_subjects_placeholder: 'Search subjects…',
   home_new_subject: 'New Subject',
   home_filter_category: 'Category',

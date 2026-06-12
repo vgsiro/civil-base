@@ -61,6 +61,16 @@
 * Remove unused code.
 * Ensure the project builds successfully.
 
+## Git — Commit & Push Rules
+
+**NEVER run `git commit` or `git push` unless the user explicitly says so.**
+
+* Do not commit at the end of a task automatically.
+* Do not push after committing automatically.
+* Do not treat "done" or "finished" as implicit permission to commit.
+* Wait for an explicit instruction such as "commit", "push", "push to git", or "commit and push".
+* When told to commit, stage only files relevant to the task — never `git add -A` blindly.
+
 ## Forbidden Actions
 
 * Do not make assumptions about requirements.

@@ -21,14 +21,21 @@ export default function UnitConverterPage() {
   return (
     <div style={{ height: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* Header */}
-      <div style={{ background: 'linear-gradient(135deg, #431407 0%, #7c2d12 60%, #c2410c 100%)', flexShrink: 0 }}>
-        <HomeNavBar dark pageLabel="Unit Converter">
+      <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)', flexShrink: 0 }}>
+        <HomeNavBar dark pageLabel="Unit Converter" mobileSlot={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'linear-gradient(135deg, #ea580c, #f97316)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Ruler size={14} color="#fff" />
+            </div>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>Unit Converter</span>
+          </div>
+        }>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #ea580c, #f97316)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Ruler size={16} color="#fff" />
             </div>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.1em' }}>GENERAL TOOLS</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', letterSpacing: '0.1em' }}>GENERAL TOOLS</div>
               <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>Unit Converter</div>
             </div>
           </div>
@@ -41,7 +48,7 @@ export default function UnitConverterPage() {
 
       {/* Main */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
-        <UnitConverter />
+        <UnitConverter pageKey="tools_general_tools_unit_converter" />
       </div>
     </div>
   )

@@ -127,6 +127,7 @@ const home = {
   home_stat_posts: 'Bài viết',
 
   // ── Section headers ──────────────────────────────────────────────────────────
+  home_section_recent: 'Gần đây',
   home_section_engineering_tools: 'Công cụ kỹ thuật',
   home_section_eurocode: 'Eurocode',
   home_section_my_subjects: 'Môn học của tôi',
@@ -155,6 +156,7 @@ const home = {
   home_card_ec3_desc: 'Cấp thép, đặc trưng tiết diện, giá trị thiết kế · EN 1993',
 
   // ── Toolbar (admin) ──────────────────────────────────────────────────────────
+  home_search_all_placeholder: 'Tìm công cụ, Eurocode, môn học…',
   home_search_subjects_placeholder: 'Tìm môn học…',
   home_new_subject: 'Môn học mới',
   home_filter_category: 'Danh mục',

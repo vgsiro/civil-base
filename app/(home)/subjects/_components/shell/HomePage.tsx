@@ -1,6 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
-import { BookOpen, FileText, Hash, Search, Plus, Pencil, Trash2, Check, X, ArrowUpAZ, ArrowDownAZ, LayoutGrid, SlidersHorizontal, ScrollText, HardHat, Users } from 'lucide-react'
+import { BookOpen, FileText, Hash, Search, Plus, Pencil, Trash2, Check, X, ArrowUpAZ, ArrowDownAZ, LayoutGrid, SlidersHorizontal, ScrollText, HardHat, Users, Clock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Subject } from '../../../../_types'
@@ -8,6 +8,8 @@ import CommunityStats from '../../../../_components/social/feed/CommunityStats'
 import HomeFooter from '../../../../_components/shared/HomeFooter'
 import { supabase } from '@/lib/supabase'
 import { useTranslation } from '../../../../i18n/LanguageContext'
+import { getRecents, recordRecent, type RecentItem } from '../../../../_hooks/useRecents'
+import { getAllFlatTools } from '../../../tools/_data/catalogue'
 
 const PRESET_COLORS = [
   '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6',
@@ -309,12 +311,79 @@ function FilterCategoryInput({ value, onChange, allCategories, selectedCategorie
   )
 }
 
+// ── Section sort dropdown ─────────────────────────────────────────────────────
+const SECTION_LABELS: Record<string, string> = {
+  recent: 'Recent',
+  engineering: 'Engineering Tools',
+  eurocode: 'Eurocode',
+  subjects: 'My Subjects',
+}
+
+function SectionSortDropdown({ order, onOrder, isAdmin }: { order: SectionId[]; onOrder: (o: SectionId[]) => void; isAdmin: boolean }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [])
+
+  const visibleSections: SectionId[] = isAdmin
+    ? ['recent', 'engineering', 'eurocode', 'subjects']
+    : ['recent', 'engineering', 'eurocode']
+
+  function move(id: SectionId, dir: -1 | 1) {
+    const next = [...order]
+    const i = next.indexOf(id)
+    if (i < 0) return
+    const j = i + dir
+    if (j < 0 || j >= next.length) return
+    ;[next[i], next[j]] = [next[j], next[i]]
+    onOrder(next)
+  }
+
+  return (
+    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+      <button onClick={() => setOpen(o => !o)}
+        style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', borderRadius: 8, border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#64748b', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = '#3b82f6'}
+        onMouseLeave={e => { if (!open) e.currentTarget.style.borderColor = '#e2e8f0' }}>
+        <SlidersHorizontal size={13} /> Sections
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 200, background: '#fff', border: '1px solid #e2e8f0', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', minWidth: 210, overflow: 'hidden' }}>
+          <div style={{ padding: '8px 14px 6px', fontSize: 10, fontWeight: 700, color: '#94a3b8', letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>Section order</div>
+          {order.filter(id => visibleSections.includes(id)).map((id, i, arr) => (
+            <div key={id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 14px', borderTop: i === 0 ? '1px solid #f1f5f9' : 'none' }}>
+              <span style={{ fontSize: 13, color: '#1e293b', flex: 1, fontWeight: 500 }}>{SECTION_LABELS[id]}</span>
+              <button onClick={() => move(id, -1)} disabled={i === 0}
+                style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', color: i === 0 ? '#e2e8f0' : '#64748b', padding: '2px 4px', fontSize: 14, lineHeight: 1 }}>↑</button>
+              <button onClick={() => move(id, 1)} disabled={i === arr.length - 1}
+                style={{ background: 'none', border: 'none', cursor: i === arr.length - 1 ? 'default' : 'pointer', color: i === arr.length - 1 ? '#e2e8f0' : '#64748b', padding: '2px 4px', fontSize: 14, lineHeight: 1 }}>↓</button>
+            </div>
+          ))}
+          <div style={{ padding: '6px 14px 10px' }}>
+            <button onClick={() => { onOrder(['recent', 'engineering', 'eurocode', 'subjects']); setOpen(false) }}
+              style={{ fontSize: 11, color: '#94a3b8', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              Reset to default
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Shared card link wrapper ──────────────────────────────────────────────────
-function CardLink({ href, hoverColor, children, onClick }: { href: string; hoverColor: string; children: React.ReactNode; onClick?: (e: React.MouseEvent) => void }) {
+function CardLink({ href, hoverColor, children, onClick, recent }: { href: string; hoverColor: string; children: React.ReactNode; onClick?: (e: React.MouseEvent) => void; recent?: Omit<RecentItem, 'visitedAt' | 'href'> }) {
   const [hovered, setHovered] = useState(false)
   return (
     <Link href={href}
-      onClick={onClick}
+      onClick={e => {
+        if (recent) recordRecent({ ...recent, href })
+        onClick?.(e)
+      }}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
       style={{ display: 'block', borderRadius: 12, overflow: 'hidden', border: `2px solid ${hovered ? hoverColor : '#e2e8f0'}`, cursor: 'pointer', background: '#fff', boxShadow: hovered ? `0 6px 20px ${hoverColor}30` : '0 1px 3px rgba(0,0,0,0.06)', transition: 'box-shadow 0.15s, transform 0.15s, border-color 0.15s', transform: hovered ? 'translateY(-2px)' : 'none', textDecoration: 'none' }}>
       {children}
@@ -322,10 +391,71 @@ function CardLink({ href, hoverColor, children, onClick }: { href: string; hover
   )
 }
 
+// ── Recent section ────────────────────────────────────────────────────────────
+function timeAgo(ts: number): string {
+  const diff = Date.now() - ts
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  if (days < 7) return `${days}d ago`
+  return new Date(ts).toLocaleDateString()
+}
+
+function RecentCard({ item }: { item: RecentItem }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <Link href={item.href}
+      onClick={() => recordRecent(item)}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      style={{ display: 'block', borderRadius: 12, overflow: 'hidden', border: `2px solid ${hovered ? item.accentColor : '#e2e8f0'}`, background: '#fff', boxShadow: hovered ? `0 6px 20px ${item.accentColor}30` : '0 1px 3px rgba(0,0,0,0.06)', transition: 'box-shadow 0.15s, transform 0.15s, border-color 0.15s', transform: hovered ? 'translateY(-2px)' : 'none', textDecoration: 'none' }}>
+      <div style={{ height: 80, background: item.gradient, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
+        <Clock size={16} color="rgba(255,255,255,0.5)" />
+        <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', fontWeight: 600 }}>{timeAgo(item.visitedAt)}</span>
+      </div>
+      <div style={{ padding: '10px 12px 14px' }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: item.accentColor, lineHeight: 1.4, marginBottom: 3 }}>{item.label}</div>
+        <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>{item.desc}</div>
+        <div style={{ marginTop: 8 }}>
+          <span style={{ fontSize: 10, fontWeight: 600, color: '#fff', background: item.accentColor, padding: '1px 7px', borderRadius: 8, opacity: 0.85 }}>{item.badge}</span>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
+function RecentSection() {
+  const { t } = useTranslation()
+  const [items, setItems] = useState<RecentItem[]>([])
+
+  useEffect(() => {
+    setItems(getRecents())
+  }, [])
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="home-section" style={{ padding: '24px 32px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <div style={{ width: 4, height: 16, borderRadius: 2, background: '#64748b' }} />
+        <Clock size={13} color="#64748b" />
+        <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_recent')}</span>
+      </div>
+      <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
+        {items.map(item => <RecentCard key={item.id} item={item} />)}
+      </div>
+      <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
+    </div>
+  )
+}
+
 function EC0Card() {
   const { t } = useTranslation()
   return (
-    <CardLink href="/standards?tab=ec0" hoverColor="#6366f1">
+    <CardLink href="/standards?tab=ec0" hoverColor="#6366f1"
+      recent={{ id: 'ec0', label: 'EC0 — Basis of Design', desc: 'Load combinations, partial factors ψ · EN 1990', badge: 'EUROCODE TOOLS', gradient: 'linear-gradient(135deg, #3730a3, #6366f1)', accentColor: '#3730a3' }}>
       <div style={{ height: 80, background: 'linear-gradient(135deg, #3730a3, #6366f1)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
         <ScrollText size={20} color="rgba(255,255,255,0.7)" />
         <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>EC0</span>
@@ -344,7 +474,8 @@ function EC0Card() {
 function EC1Card() {
   const { t } = useTranslation()
   return (
-    <CardLink href="/standards?tab=ec1" hoverColor="#0ea5e9">
+    <CardLink href="/standards?tab=ec1" hoverColor="#0ea5e9"
+      recent={{ id: 'ec1', label: 'EC1 — Actions', desc: 'Wind actions · Reference tools & tables · EN 1991', badge: 'EUROCODE TOOLS', gradient: 'linear-gradient(135deg, #0369a1, #0ea5e9)', accentColor: '#0369a1' }}>
       <div style={{ height: 80, background: 'linear-gradient(135deg, #0369a1, #0ea5e9)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
         <ScrollText size={20} color="rgba(255,255,255,0.7)" />
         <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>EC1</span>
@@ -363,7 +494,8 @@ function EC1Card() {
 function EC2Card() {
   const { t } = useTranslation()
   return (
-    <CardLink href="/standards?tab=ec2" hoverColor="#10b981">
+    <CardLink href="/standards?tab=ec2" hoverColor="#10b981"
+      recent={{ id: 'ec2', label: 'EC2 — Concrete', desc: 'Concrete & rebar grades, material properties · EN 1992', badge: 'EUROCODE TOOLS', gradient: 'linear-gradient(135deg, #065f46, #10b981)', accentColor: '#065f46' }}>
       <div style={{ height: 80, background: 'linear-gradient(135deg, #065f46, #10b981)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
         <ScrollText size={20} color="rgba(255,255,255,0.7)" />
         <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>EC2</span>
@@ -382,7 +514,8 @@ function EC2Card() {
 function EC3Card() {
   const { t } = useTranslation()
   return (
-    <CardLink href="/standards?tab=ec3" hoverColor="#8b5cf6">
+    <CardLink href="/standards?tab=ec3" hoverColor="#8b5cf6"
+      recent={{ id: 'ec3', label: 'EC3 — Steel', desc: 'Steel grades, section properties, design values · EN 1993', badge: 'EUROCODE TOOLS', gradient: 'linear-gradient(135deg, #4c1d95, #8b5cf6)', accentColor: '#4c1d95' }}>
       <div style={{ height: 80, background: 'linear-gradient(135deg, #4c1d95, #8b5cf6)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
         <ScrollText size={20} color="rgba(255,255,255,0.7)" />
         <span style={{ fontSize: 18, fontWeight: 900, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.02em' }}>EC3</span>
@@ -401,7 +534,8 @@ function EC3Card() {
 function DesignToolsCard() {
   const { t } = useTranslation()
   return (
-    <CardLink href="/tools" hoverColor="#6366f1">
+    <CardLink href="/tools" hoverColor="#6366f1"
+      recent={{ id: 'design-tools', label: 'Design Tools', desc: 'All engineering calculators in one place · Eurocode', badge: 'TOOL LIBRARY', gradient: 'linear-gradient(135deg, #1e1b4b, #4338ca, #6366f1)', accentColor: '#3730a3' }}>
       <div style={{ height: 80, background: 'linear-gradient(135deg, #1e1b4b, #4338ca, #6366f1)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
         <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
           <rect x="1" y="1" width="8" height="8" rx="1.5" fill="rgba(255,255,255,0.8)"/>
@@ -425,7 +559,9 @@ function DesignToolsCard() {
 function StructuralAICard({ isLoggedIn, onSignIn }: { isLoggedIn: boolean; onSignIn: () => void }) {
   const { t } = useTranslation()
   return (
-    <CardLink href="/structural-ai" hoverColor="#f59e0b" onClick={!isLoggedIn ? (e) => { e.preventDefault(); onSignIn() } : undefined}>
+    <CardLink href="/structural-ai" hoverColor="#f59e0b"
+      recent={{ id: 'structural-ai', label: 'Structural AI', desc: 'Clause-cited checks · Eurocode & TCVN · Deterministic math', badge: 'AI ASSISTANT', gradient: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)', accentColor: '#f59e0b' }}
+      onClick={!isLoggedIn ? (e) => { e.preventDefault(); onSignIn() } : undefined}>
       <div style={{ height: 80, background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)', position: 'relative', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 12px 10px' }}>
         <HardHat size={22} color="#f59e0b" />
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
@@ -481,41 +617,74 @@ function DashboardStats() {
   )
 }
 
+type SectionId = 'recent' | 'engineering' | 'eurocode' | 'subjects'
+
+const SECTION_ORDER_KEY = 'home_section_order'
+
+const DEFAULT_ORDER: SectionId[] = ['recent', 'engineering', 'eurocode', 'subjects']
+
+function getSectionOrder(): SectionId[] {
+  if (typeof window === 'undefined') return DEFAULT_ORDER
+  try {
+    const saved = localStorage.getItem(SECTION_ORDER_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved) as SectionId[]
+      // Merge any new sections from DEFAULT_ORDER that aren't in the saved order yet
+      const merged = [...parsed]
+      for (const id of DEFAULT_ORDER) {
+        if (!merged.includes(id)) merged.push(id)
+      }
+      return merged
+    }
+  } catch {}
+  return DEFAULT_ORDER
+}
+
 export default function HomePage({ stats, subjects, recentSubjects, onSelectSubject, onOpenSearch, onAddSubject, onUpdateSubject, onDeleteSubject, isLoggedIn, isAdmin, onSignIn }: Props) {
   const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterCategory, setFilterCategory] = useState('')
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const [sort, setSort] = useState<SortMode>('default')
+  const [sectionOrder, setSectionOrder] = useState<SectionId[]>(getSectionOrder)
   const [editingSubject, setEditingSubject] = useState<Subject | null>(null)
-
-  const allCategories = [...new Set(subjects.map(s => s.category ?? '').filter(Boolean))].sort()
 
   const q = searchQuery.toLowerCase().trim()
 
-  let display = subjects
-    .filter(s => selectedCategories.length === 0 || selectedCategories.includes(s.category ?? ''))
-    .filter(s => !q || (s.name ?? '').toLowerCase().includes(q) || (s.code ?? '').toLowerCase().includes(q))
+  // Subject filtering (for My Subjects section)
+  const displaySubjects = subjects.filter(s =>
+    !q || (s.name ?? '').toLowerCase().includes(q) || (s.code ?? '').toLowerCase().includes(q)
+  )
 
-  if (sort === 'az') display = [...display].sort((a, b) => a.name.localeCompare(b.name))
-  else if (sort === 'za') display = [...display].sort((a, b) => b.name.localeCompare(a.name))
-  else if (sort === 'category') display = [...display].sort((a, b) => (a.category ?? '').localeCompare(b.category ?? '') || a.name.localeCompare(b.name))
+  // EC tool cards filtered by search
+  const EC_CARDS = [
+    { id: 'ec0', label: 'EC0 — Basis of Design', desc: 'Load combinations, partial factors' },
+    { id: 'ec1', label: 'EC1 — Actions',          desc: 'Wind actions, reference tools' },
+    { id: 'ec2', label: 'EC2 — Concrete',         desc: 'Concrete & rebar grades, material properties' },
+    { id: 'ec3', label: 'EC3 — Steel',            desc: 'Steel grades, section properties' },
+  ]
+  const ENG_CARDS = [
+    { id: 'ai',    label: 'Structural AI',  desc: 'Clause-cited checks, Eurocode & TCVN' },
+    { id: 'tools', label: 'Design Tools',   desc: 'All engineering calculators in one place' },
+  ]
+  // Individual tool cards matched from the unified catalogue
+  const matchedTools = q ? getAllFlatTools().filter(({ card, group }) =>
+    card.label.toLowerCase().includes(q) ||
+    card.desc.toLowerCase().includes(q) ||
+    group.part.toLowerCase().includes(q) ||
+    group.label.toLowerCase().includes(q) ||
+    group.category.label.toLowerCase().includes(q)
+  ) : []
 
-  type Group = { label: string; items: Subject[] }
-  const groups: Group[] = sort === 'category'
-    ? (() => {
-        const m = new Map<string, Subject[]>()
-        for (const s of display) {
-          const k = s.category || ''
-          if (!m.has(k)) m.set(k, [])
-          m.get(k)!.push(s)
-        }
-        const result: Group[] = []
-        ;[...m.keys()].filter(k => k).sort().forEach(k => result.push({ label: k, items: m.get(k)! }))
-        if (m.has('')) result.push({ label: '', items: m.get('')! })
-        return result
-      })()
-    : [{ label: '', items: display }]
+  const showEC      = !q || EC_CARDS.some(c => c.label.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q))
+  const showEng     = !q || ENG_CARDS.some(c => c.label.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q))
+  const showSubjects = isAdmin && (!q || displaySubjects.length > 0)
+  const showToolResults = q && matchedTools.length > 0
+
+  function handleSectionOrder(order: SectionId[]) {
+    setSectionOrder(order)
+    localStorage.setItem(SECTION_ORDER_KEY, JSON.stringify(order))
+  }
+
+  const allCategories = [...new Set(subjects.map(s => s.category ?? '').filter(Boolean))].sort()
+  const groups = [{ label: '', items: displaySubjects }]
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
@@ -567,93 +736,137 @@ export default function HomePage({ stats, subjects, recentSubjects, onSelectSubj
         </div>
       </div>
 
-      {/* Toolbar */}
-      {isAdmin && <div className="home-toolbar" style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '10px 32px', display: 'flex', alignItems: 'center', gap: 8 }}>
-        <div style={{ position: 'relative', width: 'calc(2 * 214px + 14px)' }}>
-          <Search size={12} color="#94a3b8" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-            placeholder={t('home_search_subjects_placeholder')}
-            style={{ width: '100%', padding: '6px 26px 6px 26px', borderRadius: 7, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#1e293b', fontSize: 12, outline: 'none', boxSizing: 'border-box' }} />
+      {/* Unified search + section sort bar */}
+      <div className="home-toolbar" style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '10px 32px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ position: 'relative', flex: 1, maxWidth: 480 }}>
+          <Search size={13} color="#94a3b8" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <input
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder={t('home_search_all_placeholder')}
+            style={{ width: '100%', padding: '8px 32px 8px 32px', borderRadius: 8, border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#1e293b', fontSize: 13, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.15s' }}
+            onFocus={e => { e.currentTarget.style.borderColor = '#3b82f6'; e.currentTarget.style.background = '#fff' }}
+            onBlur={e => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = '#f8fafc' }}
+          />
           {searchQuery && (
             <button onClick={() => setSearchQuery('')}
-              style={{ position: 'absolute', right: 7, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0, display: 'flex' }}>
-              <X size={11} />
+              style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0, display: 'flex' }}>
+              <X size={13} />
             </button>
           )}
         </div>
-        <FilterCategoryInput value={filterCategory} onChange={v => setFilterCategory(v)} allCategories={allCategories} selectedCategories={selectedCategories} onToggleCategory={cat => setSelectedCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])} onClear={() => { setFilterCategory(''); setSelectedCategories([]) }} />
-        <div style={{ flex: 1 }} />
-        <button onClick={onAddSubject}
-          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 8, background: '#3b82f6', border: 'none', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 600 }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#2563eb')}
-          onMouseLeave={e => (e.currentTarget.style.background = '#3b82f6')}>
-          <Plus size={13} /> {t('home_new_subject')}
-        </button>
-      </div>}
 
-      {/* Engineering Tools */}
-      <div className="home-section" style={{ padding: '24px 32px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <div style={{ width: 4, height: 16, borderRadius: 2, background: '#f59e0b' }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_engineering_tools')}</span>
-          <div style={{ flex: 1 }} />
-          {isAdmin && <SortDropdown sort={sort} onSort={setSort} />}
-        </div>
-        <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
-          <StructuralAICard isLoggedIn={isLoggedIn} onSignIn={onSignIn} />
-          <DesignToolsCard />
-        </div>
-        <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
+        {/* Section order sort */}
+        <SectionSortDropdown order={sectionOrder} onOrder={handleSectionOrder} isAdmin={isAdmin} />
+
+        {/* Admin: New Subject */}
+        {isAdmin && (
+          <button onClick={onAddSubject}
+            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 8, background: '#3b82f6', border: 'none', cursor: 'pointer', fontSize: 12, color: '#fff', fontWeight: 600, flexShrink: 0 }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#2563eb')}
+            onMouseLeave={e => (e.currentTarget.style.background = '#3b82f6')}>
+            <Plus size={13} /> {t('home_new_subject')}
+          </button>
+        )}
       </div>
 
-      {/* Eurocode */}
-      <div className="home-section" style={{ padding: '0 32px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <div style={{ width: 4, height: 16, borderRadius: 2, background: '#1d4ed8' }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_eurocode')}</span>
-        </div>
-        <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
-          <EC0Card /><EC1Card /><EC2Card /><EC3Card />
-        </div>
-        <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
-      </div>
-
-      {/* My Subjects */}
-      {isAdmin && <div className="home-section" style={{ padding: '0 32px 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          <div style={{ width: 4, height: 16, borderRadius: 2, background: '#3b82f6' }} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_my_subjects')}</span>
-          {subjects.length > 0 && <span style={{ fontSize: 11, color: '#94a3b8' }}>{subjects.length} {subjects.length !== 1 ? t('home_subjects_count_other') : t('home_subjects_count_one')}</span>}
-        </div>
-
-        {display.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
-            <BookOpen size={40} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.2 }} />
-            <p style={{ fontSize: 14, margin: 0 }}>{subjects.length === 0 ? t('home_no_subjects_yet') : t('home_no_subjects_match')}</p>
-            {subjects.length === 0 && <p style={{ fontSize: 12, marginTop: 4 }}>{t('home_no_subjects_hint')}</p>}
+      {/* Individual tool search results — shown only when a query is active */}
+      {showToolResults && (
+        <div className="home-section" style={{ padding: '24px 32px 0' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <div style={{ width: 4, height: 16, borderRadius: 2, background: '#6366f1' }} />
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tools</span>
+            <span style={{ fontSize: 11, color: '#94a3b8' }}>{matchedTools.length} result{matchedTools.length !== 1 ? 's' : ''}</span>
           </div>
-        ) : (
-          groups.map(({ label, items }) => (
-            <div key={label || '__all__'} style={{ marginBottom: label ? 32 : 0 }}>
-              {label && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                  <div style={{ width: 4, height: 16, borderRadius: 2, background: categoryColor(label) }} />
-                  <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
-                  <span style={{ fontSize: 11, color: '#94a3b8' }}>{items.length} {items.length !== 1 ? t('home_subjects_count_other') : t('home_subjects_count_one')}</span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 14, marginBottom: 24 }}>
+            {matchedTools.map(({ key, href, card, group }) => (
+              <Link key={key} href={href}
+                style={{ width: 214, background: '#fff', border: '2px solid #e2e8f0', borderRadius: 12, overflow: 'hidden', cursor: 'pointer', textAlign: 'left', padding: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.06)', transition: 'box-shadow 0.15s, transform 0.15s, border-color 0.15s', flexShrink: 0, textDecoration: 'none', display: 'block' }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 6px 20px ${card.accent}30`; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = card.accent }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.06)'; e.currentTarget.style.transform = 'none'; e.currentTarget.style.borderColor = '#e2e8f0' }}>
+                <div style={{ height: 80, background: card.gradient, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                  {card.graphic}
+                  <span style={{ position: 'absolute', top: 7, right: 9, fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: '0.06em', textTransform: 'uppercase' as const }}>{card.ref}</span>
+                </div>
+                <div style={{ padding: '10px 12px 14px' }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: group.category.accentColor, background: group.category.accentBg, display: 'inline-block', padding: '1px 7px', borderRadius: 6, marginBottom: 5, marginLeft: -2 }}>{group.part}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: card.accent, lineHeight: 1.3, marginBottom: 3 }}>{card.label}</div>
+                  <div style={{ fontSize: 11, color: '#64748b', lineHeight: 1.5 }}>{card.desc}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
+        </div>
+      )}
+
+      {/* Dynamic sections in user-defined order */}
+      {sectionOrder.map(sectionId => {
+        if (sectionId === 'recent') {
+          return !q ? <RecentSection key="recent" /> : null
+        }
+
+        if (sectionId === 'engineering' && showEng) {
+          return (
+            <div key="engineering" className="home-section" style={{ padding: '24px 32px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <div style={{ width: 4, height: 16, borderRadius: 2, background: '#f59e0b' }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_engineering_tools')}</span>
+              </div>
+              <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
+                <StructuralAICard isLoggedIn={isLoggedIn} onSignIn={onSignIn} />
+                <DesignToolsCard />
+              </div>
+              <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
+            </div>
+          )
+        }
+
+        if (sectionId === 'eurocode' && showEC) {
+          return (
+            <div key="eurocode" className="home-section" style={{ padding: '0 32px 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <div style={{ width: 4, height: 16, borderRadius: 2, background: '#1d4ed8' }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_eurocode')}</span>
+              </div>
+              <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
+                <EC0Card /><EC1Card /><EC2Card /><EC3Card />
+              </div>
+              <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
+            </div>
+          )
+        }
+
+        if (sectionId === 'subjects' && showSubjects) {
+          return (
+            <div key="subjects" className="home-section" style={{ padding: '0 32px 24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <div style={{ width: 4, height: 16, borderRadius: 2, background: '#3b82f6' }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_my_subjects')}</span>
+                {subjects.length > 0 && <span style={{ fontSize: 11, color: '#94a3b8' }}>{subjects.length} {subjects.length !== 1 ? t('home_subjects_count_other') : t('home_subjects_count_one')}</span>}
+              </div>
+              {displaySubjects.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
+                  <BookOpen size={40} style={{ margin: '0 auto 12px', display: 'block', opacity: 0.2 }} />
+                  <p style={{ fontSize: 14, margin: 0 }}>{subjects.length === 0 ? t('home_no_subjects_yet') : t('home_no_subjects_match')}</p>
+                  {subjects.length === 0 && <p style={{ fontSize: 12, marginTop: 4 }}>{t('home_no_subjects_hint')}</p>}
+                </div>
+              ) : (
+                <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14 }}>
+                  {displaySubjects.map(s => (
+                    <SubjectCard key={s.id} subject={s}
+                      onClick={() => onSelectSubject(s)}
+                      onEdit={e => { e.stopPropagation(); setEditingSubject(s) }}
+                    />
+                  ))}
                 </div>
               )}
-              <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14 }}>
-                {items.map(s => (
-                  <SubjectCard key={s.id} subject={s}
-                    onClick={() => onSelectSubject(s)}
-                    onEdit={e => { e.stopPropagation(); setEditingSubject(s) }}
-                  />
-                ))}
-              </div>
             </div>
-          ))
-        )}
-      </div>}
+          )
+        }
+
+        return null
+      })}
 
       <HomeFooter />
 

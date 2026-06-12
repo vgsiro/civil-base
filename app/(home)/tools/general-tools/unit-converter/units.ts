@@ -91,8 +91,10 @@ export const CATEGORIES: Category[] = [
     baseUnit: 'kPa',
     units: [
       { id: 'Pa',      label: 'Pascal',      symbol: 'Pa',      factor: 1e-3      },
-      { id: 'kPa',     label: 'Kilopascal',  symbol: 'kPa',     factor: 1         },
-      { id: 'MPa',     label: 'Megapascal',  symbol: 'MPa',     factor: 1e3       },
+      { id: 'kPa',     label: 'Kilopascal (kN/m²)', symbol: 'kPa',  factor: 1    },
+      { id: 'kNm2',    label: 'kN/m²',       symbol: 'kN/m²',   factor: 1         },
+      { id: 'MPa',     label: 'Megapascal (N/mm²)', symbol: 'MPa',  factor: 1e3  },
+      { id: 'Nmm2',    label: 'N/mm²',       symbol: 'N/mm²',   factor: 1e3       },
       { id: 'GPa',     label: 'Gigapascal',  symbol: 'GPa',     factor: 1e6       },
       { id: 'kgfcm2',  label: 'kgf/cm²',    symbol: 'kgf/cm²', factor: 98.0665   },
       { id: 'psi',     label: 'psi',         symbol: 'psi',     factor: 6.89476   },

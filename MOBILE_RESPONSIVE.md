@@ -289,6 +289,17 @@ Add `className="ec-tool-shell"` to the `isTool` wrapper in `EcToolShell.tsx` (al
 
 When building a new interactive tool (calculator, section check, etc.):
 
+- [ ] **NavBar title on mobile:** always pass `mobileSlot` to `HomeNavBar` with a compact version of the tool title. The `children` breadcrumb is hidden on mobile (`.homenav-breadcrumb { display: none }`), so without `mobileSlot` the navbar center will be blank. Example:
+  ```tsx
+  <HomeNavBar dark pageLabel="My Tool" mobileSlot={
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <MyIcon size={14} color="#fff" />
+      <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>My Tool</span>
+    </div>
+  }>
+    {/* full desktop breadcrumb */}
+  </HomeNavBar>
+  ```
 - [ ] **Outer layout:** does the tool use a horizontal flex (input | results)? Add `className="rect-tool-layout"` or a new class that stacks to `flex-direction: column` on mobile.
 - [ ] **Input panel:** fixed width? Add a class that sets `width: 100%` on mobile.
 - [ ] **Results panel:** `overflow: hidden` ancestors? Add `.ec-tool-shell` pattern or ensure the container switches to `overflow-y: auto` on mobile.
@@ -302,6 +313,7 @@ When building a new interactive tool (calculator, section check, etc.):
 
 ## Checklist — New Page
 
+- [ ] **NavBar title on mobile:** same as above — always pass `mobileSlot` to `HomeNavBar`.
 - [ ] **Full-width layout:** does it have left/right sidebars? Add classes and `display: none` them on mobile.
 - [ ] **Bottom padding:** add `80px` bottom padding to main content so it clears the mobile bottom nav.
 - [ ] **Nav:** use `HomeNavBar` (home area) or `TopNavBar` (social area) — both already handle mobile sizing.
