@@ -192,7 +192,7 @@ export default function Ec2RectCalc({ onBack }: { onBack?: () => void }) {
           </button>
         </div>
       )}
-      <div style={{ display: 'flex', gap: 0, flex: 1, minHeight: 0, overflow: 'visible', minWidth: 0 }}>
+      <div className="rect-tool-layout" style={{ display: 'flex', gap: 0, flex: 1, minHeight: 0, overflow: 'visible', minWidth: 0 }}>
         <RectInputPanel
           inp={inp} res={res} hasSideBars={hasSideBars}
           set={set} setInp={setInp} toggleSideBars={toggleSideBars}

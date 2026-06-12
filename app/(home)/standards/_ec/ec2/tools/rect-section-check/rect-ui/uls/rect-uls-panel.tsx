@@ -26,10 +26,10 @@ export function UlsResults({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {/* Diagram + right sidebar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
-          <SectionDiagram inp={inp} res={res} onSpacingClick={onSpacingClick} />
-          <NMDiagram res={res} NEd={inp.NEd} MEd={anyEffect ? res.MEd_tot : inp.MEd} mLabel={anyEffect ? 'MEd,tot' : undefined} />
+      <div className="rect-uls-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 16, alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center', minWidth: 0 }}>
+          <div style={{ overflowX: 'auto', width: '100%' }}><SectionDiagram inp={inp} res={res} onSpacingClick={onSpacingClick} /></div>
+          <div style={{ overflowX: 'auto', width: '100%' }}><NMDiagram res={res} NEd={inp.NEd} MEd={anyEffect ? res.MEd_tot : inp.MEd} mLabel={anyEffect ? 'MEd,tot' : undefined} /></div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

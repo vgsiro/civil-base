@@ -24,7 +24,9 @@ export function ShearPanel({ inp, res }: { inp: Ec2RectInput; res: Ec2RectResult
             <div style={{ fontSize: 10, fontWeight: 700, color: '#334155', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               {t('std_ec2rc_cross_section_stirrups')}
             </div>
-            <ShearSectionDiagram inp={inp} />
+            <div style={{ overflowX: 'auto', width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <ShearSectionDiagram inp={inp} />
+            </div>
           </div>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>

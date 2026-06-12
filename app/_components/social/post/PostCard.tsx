@@ -13,6 +13,7 @@ import EditPostModal from './EditPostModal'
 import PostModalFromFeed from './PostModalFromFeed'
 import SignInPromptModal from '../../shared/SignInPromptModal'
 import { useTranslation } from '../../../i18n/LanguageContext'
+import { toast } from '../../shared/Toast'
 
 // ── Quoted reshare ────────────────────────────────────────────────────────────
 export function QuotedPost({ post, currentUserId }: { post: PostWithProfile; currentUserId?: string | null }) {
@@ -548,9 +549,20 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
 
   async function deletePost() {
     setDeleting(true)
-    await supabase.from('posts').delete().eq('id', post.id)
+    await supabase.from('post_likes').delete().eq('post_id', post.id)
+    await supabase.from('post_comments').delete().eq('post_id', post.id)
+    await supabase.from('post_recommendations').delete().eq('post_id', post.id)
+    await supabase.from('post_votes').delete().eq('post_id', post.id)
+    await supabase.from('saved_posts').delete().eq('post_id', post.id)
+    await supabase.from('notifications').delete().eq('post_id', post.id)
+    await supabase.from('user_warnings').delete().eq('post_id', post.id)
+    await supabase.from('post_interactions').delete().eq('post_id', post.id)
+    await supabase.from('post_seen').delete().eq('post_id', post.id)
+    const { error } = await supabase.from('posts').delete().eq('id', post.id)
     setDeleting(false)
+    if (error) { alert('Failed to delete post. Please try again.'); return }
     setShowDeleteConfirm(false)
+    toast('Post deleted', 'delete')
     onDeleted?.(post.id)
   }
 
@@ -570,7 +582,7 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
       {signInPromptAction && <SignInPromptModal action={signInPromptAction} onClose={() => setSignInPromptAction(null)} />}
       {showEdit && (
         <EditPostModal post={post} onClose={() => setShowEdit(false)}
-          onSaved={(body, visibility) => { setShowEdit(false); onEdited?.(post.id, body, visibility) }} />
+          onSaved={(body, visibility) => { setShowEdit(false); toast('Post updated', 'success'); onEdited?.(post.id, body, visibility) }} />
       )}
       {showDeleteConfirm && (
         <>
@@ -932,34 +944,35 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
         {/* Action bar */}
         <div style={{ borderTop: '1px solid #f1f5f9', padding: '6px 10px', display: 'flex', gap: 2 }}>
           <button onClick={() => { if (!currentUserId) { setSignInPromptAction('like'); return } onLikeToggle(post.id, liked) }}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: liked ? '#ef4444' : '#64748b', fontWeight: liked ? 600 : 400 }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 4px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: liked ? '#ef4444' : '#64748b', fontWeight: liked ? 600 : 400 }}
             onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
             <Heart size={15} fill={liked ? '#ef4444' : 'none'} color={liked ? '#ef4444' : '#94a3b8'} />
-            {likeCount > 0 ? likeCount : ''} {t('action_like')}
+            <span className="postcard-action-label">{likeCount > 0 ? likeCount : ''} {t('action_like')}</span>
           </button>
           <button onClick={() => { if (onModalOpen) { onModalOpen(post.id) } else { setShowModal(true) } }}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b' }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 4px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b' }}
             onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
             <MessageCircle size={15} color="#94a3b8" />
-            {commentCount > 0 ? commentCount : ''} {t('action_comment')}
+            <span className="postcard-action-label">{commentCount > 0 ? commentCount : ''} {t('action_comment')}</span>
           </button>
           {!isPhotoPost && (
             <button onClick={() => { if (!currentUserId) { setSignInPromptAction('recommend'); return } if (!currentUserIsVerified) { setShowVerifyPrompt(true); return } onRecommendToggle?.(post.id, recommended) }}
               title={t('recommend_title')}
-              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: recommended ? '#0369a1' : '#64748b', fontWeight: recommended ? 600 : 400 }}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 4px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: recommended ? '#0369a1' : '#64748b', fontWeight: recommended ? 600 : 400 }}
               onMouseEnter={e => { e.currentTarget.style.background = '#e0f2fe' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
               <BadgeCheck size={15} color={recommended ? '#0369a1' : '#94a3b8'} />
-              {recommendCount > 0 ? recommendCount : ''} {recommended ? t('action_recommended') : t('action_recommend')}
+              <span className="postcard-action-label">{recommendCount > 0 ? recommendCount : ''} {recommended ? t('action_recommended') : t('action_recommend')}</span>
             </button>
           )}
           <button onClick={() => { if (!currentUserId) { setSignInPromptAction('share'); return } setShowShareModal(true) }}
-            style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b' }}
+            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, padding: '6px 4px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b' }}
             onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'none' }}>
-            <Share2 size={15} color="#94a3b8" /> {t('action_share')}
+            <Share2 size={15} color="#94a3b8" />
+            <span className="postcard-action-label">{t('action_share')}</span>
           </button>
           <button onClick={() => { if (!currentUserId) { setSignInPromptAction('save'); return } setShowSaveModal(true) }}
             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 8, border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: '#64748b', marginLeft: 'auto' }}
@@ -968,7 +981,7 @@ export default function PostCard({ post, currentUserId, currentUserIsVerified = 
             <Bookmark size={15} color="#94a3b8" />
           </button>
           {showShareModal && (
-            <ShareModal post={post} currentUser={currentUser} currentProfile={currentProfile} onClose={() => setShowShareModal(false)} onShared={enriched => { onPostShared?.(enriched); setShowShareModal(false) }} />
+            <ShareModal post={post} currentUser={currentUser} currentProfile={currentProfile} onClose={() => setShowShareModal(false)} onShared={enriched => { onPostShared?.(enriched); setShowShareModal(false); toast('Post shared', 'share') }} />
           )}
           {showSaveModal && currentUserId && (
             <SaveModal postId={post.id} userId={currentUserId} onClose={() => setShowSaveModal(false)} />

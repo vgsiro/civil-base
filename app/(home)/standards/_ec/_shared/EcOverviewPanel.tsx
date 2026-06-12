@@ -79,7 +79,7 @@ export function EcOverviewPanel({
         <AdminEditBar dirty={dirty} saving={saving} onSave={save} onDiscard={discard} />
       )}
       <div style={{ overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
+        <div className="ec-overview-body" style={{ padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: 20, flex: 1 }}>
           <div>
             <EditableText value={pageHeading} editMode={!!editMode}
               onCommit={v => { setPageHeading(v); stage('overview', 'heading', v) }}

@@ -382,16 +382,16 @@ export default function PostModal({ post, currentUserId, currentUserIsVerified, 
   return createPortal(
     <div data-modal-portal="">
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(255,255,255,0.55)', zIndex: 9000 }} />
-      <div onWheel={e => e.stopPropagation()} style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 9001, display: 'flex', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.22)', background: '#fff', width: hasImage ? '90vw' : '680px', maxWidth: hasImage ? 1100 : 680, height: '88vh', maxHeight: 860, animation: 'modalIn 0.15s ease' }}>
+      <div onWheel={e => e.stopPropagation()} className="post-modal-shell" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 9001, display: 'flex', borderRadius: 12, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.22)', background: '#fff', width: hasImage ? '90vw' : '680px', maxWidth: hasImage ? 1100 : 680, height: '88vh', maxHeight: 860, animation: 'modalIn 0.15s ease' }}>
         <style>{`@keyframes modalIn { from { opacity: 0; transform: translate(-50%,-50%) scale(0.97) } to { opacity: 1; transform: translate(-50%,-50%) scale(1) } }`}</style>
 
         {hasImage && (
-          <div style={{ flex: '1 1 0', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden' }}>
+          <div className="post-modal-image" style={{ flex: '1 1 0', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: 0, overflow: 'hidden' }}>
             <img src={post.media_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
           </div>
         )}
 
-        <div style={{ width: hasImage ? 380 : '100%', flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="post-modal-comments" style={{ width: hasImage ? 380 : '100%', flexShrink: 0, background: '#fff', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Header */}
           <div style={{ padding: '12px 14px', borderBottom: '1px solid #f0f2f5', display: 'flex', alignItems: 'flex-start', gap: 10, flexShrink: 0 }}>
             <a href={`/u/${post.profiles?.username}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
@@ -456,16 +456,20 @@ export default function PostModal({ post, currentUserId, currentUserIsVerified, 
             </div>
           </div>
 
-          {(post.body || post.reshared_post) && (
-            <div style={{ padding: hasImage ? '12px 14px' : '20px 20px', borderBottom: hasPoll ? 'none' : '1px solid #f0f2f5', flex: 1, overflowY: 'auto', minHeight: 0 }}>
-              {post.body && <p style={{ margin: 0, fontSize: hasImage ? 14 : 17, color: '#0f172a', lineHeight: 1.7, whiteSpace: 'pre-wrap' as const }}>{post.body}</p>}
-              {post.reshared_post && (
-                <div style={{ marginTop: post.body ? 10 : 0 }}>
-                  <QuotedPost post={post.reshared_post} currentUserId={currentUserId} />
-                </div>
-              )}
-            </div>
-          )}
+          <div style={{ padding: hasImage ? '12px 14px' : '20px 20px', borderBottom: hasPoll ? 'none' : '1px solid #f0f2f5', flex: 1, overflowY: 'auto', minHeight: 0 }}>
+            {/* Image shown inline on mobile (left panel hidden), on desktop left panel shows it */}
+            {hasImage && (
+              <div className="post-modal-inline-image" style={{ display: 'none', marginBottom: post.body ? 10 : 0 }}>
+                <img src={post.media_url!} alt="" style={{ width: '100%', borderRadius: 8, display: 'block', objectFit: 'contain', maxHeight: 340 }} />
+              </div>
+            )}
+            {post.body && <p style={{ margin: 0, fontSize: hasImage ? 14 : 17, color: '#0f172a', lineHeight: 1.7, whiteSpace: 'pre-wrap' as const }}>{post.body}</p>}
+            {post.reshared_post && (
+              <div style={{ marginTop: post.body ? 10 : 0 }}>
+                <QuotedPost post={post.reshared_post} currentUserId={currentUserId} />
+              </div>
+            )}
+          </div>
           {hasPoll && (() => {
             const options = [...((post as any).poll_options as string[]), ...localOptions]
             const isPollOpen = !!(post as any).poll_open

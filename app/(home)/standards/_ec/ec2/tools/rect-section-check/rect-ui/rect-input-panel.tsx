@@ -176,7 +176,7 @@ export function RectInputPanel({
   const showShear = activeTab === 'shear-torsion'
 
   return (
-    <div style={{ width: 300, flexShrink: 0, minHeight: '100vh', overflowY: 'auto', overflowX: 'hidden', background: '#fff', borderRight: '1px solid #e2e8f0', padding: '12px 12px', display: 'flex', flexDirection: 'column', gap: 8, boxSizing: 'border-box' }}>
+    <div className="rect-input-panel" style={{ width: 300, flexShrink: 0, minHeight: '100vh', overflowY: 'auto', overflowX: 'hidden', background: '#fff', borderRight: '1px solid #e2e8f0', padding: '12px 12px', display: 'flex', flexDirection: 'column', gap: 8, boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
         <span style={{ fontSize: 13, fontWeight: 800, color: '#1e293b', flex: 1 }}>{t('std_ec2rc_input_params')}</span>
         <button

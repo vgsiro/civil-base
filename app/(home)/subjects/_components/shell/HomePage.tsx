@@ -520,7 +520,7 @@ export default function HomePage({ stats, subjects, recentSubjects, onSelectSubj
   return (
     <div style={{ flex: 1, overflowY: 'auto', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
       {/* Hero */}
-      <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)', padding: '20px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="home-hero" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)', padding: '20px 32px', display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <BookOpen size={18} color="#fff" />
@@ -568,7 +568,7 @@ export default function HomePage({ stats, subjects, recentSubjects, onSelectSubj
       </div>
 
       {/* Toolbar */}
-      {isAdmin && <div style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '10px 32px', display: 'flex', alignItems: 'center', gap: 8 }}>
+      {isAdmin && <div className="home-toolbar" style={{ background: '#fff', borderBottom: '1px solid #e2e8f0', padding: '10px 32px', display: 'flex', alignItems: 'center', gap: 8 }}>
         <div style={{ position: 'relative', width: 'calc(2 * 214px + 14px)' }}>
           <Search size={12} color="#94a3b8" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
           <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
@@ -592,14 +592,14 @@ export default function HomePage({ stats, subjects, recentSubjects, onSelectSubj
       </div>}
 
       {/* Engineering Tools */}
-      <div style={{ padding: '24px 32px 0' }}>
+      <div className="home-section" style={{ padding: '24px 32px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <div style={{ width: 4, height: 16, borderRadius: 2, background: '#f59e0b' }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_engineering_tools')}</span>
           <div style={{ flex: 1 }} />
           {isAdmin && <SortDropdown sort={sort} onSort={setSort} />}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
+        <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
           <StructuralAICard isLoggedIn={isLoggedIn} onSignIn={onSignIn} />
           <DesignToolsCard />
         </div>
@@ -607,19 +607,19 @@ export default function HomePage({ stats, subjects, recentSubjects, onSelectSubj
       </div>
 
       {/* Eurocode */}
-      <div style={{ padding: '0 32px 0' }}>
+      <div className="home-section" style={{ padding: '0 32px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <div style={{ width: 4, height: 16, borderRadius: 2, background: '#1d4ed8' }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_eurocode')}</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
+        <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14, marginBottom: 24 }}>
           <EC0Card /><EC1Card /><EC2Card /><EC3Card />
         </div>
         <div style={{ borderTop: '1px solid #e2e8f0', marginBottom: 24 }} />
       </div>
 
       {/* My Subjects */}
-      {isAdmin && <div style={{ padding: '0 32px 24px' }}>
+      {isAdmin && <div className="home-section" style={{ padding: '0 32px 24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
           <div style={{ width: 4, height: 16, borderRadius: 2, background: '#3b82f6' }} />
           <span style={{ fontSize: 12, fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t('home_section_my_subjects')}</span>
@@ -642,7 +642,7 @@ export default function HomePage({ stats, subjects, recentSubjects, onSelectSubj
                   <span style={{ fontSize: 11, color: '#94a3b8' }}>{items.length} {items.length !== 1 ? t('home_subjects_count_other') : t('home_subjects_count_one')}</span>
                 </div>
               )}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14 }}>
+              <div className="home-card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(214px, 214px))', gap: 14 }}>
                 {items.map(s => (
                   <SubjectCard key={s.id} subject={s}
                     onClick={() => onSelectSubject(s)}

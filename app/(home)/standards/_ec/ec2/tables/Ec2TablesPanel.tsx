@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from '@/app/i18n/LanguageContext'
 import PageDiscussion from '../../../../../_components/home/discussion/PageDiscussion'
 import { ConcretePropertiesTable, AnchorageLapTable, ReinforcementQuantityTable, CONCRETE_GRADES, ANCHORAGE_DATA, LAP_DATA } from './Ec2Tables'
-import { TablesList, TableEntry } from '../../_shared/TablesList'
+import { TablesList, MobilePanelPicker, TableEntry } from '../../_shared/TablesList'
 import { useAdminEdit } from '../../_shared/admin/useAdminEdit'
 import { EditableText } from '../../_shared/admin/EditableText'
 import { AdminEditToggle, AdminEditBar } from '../../_shared/admin/AdminSaveBar'
@@ -181,7 +181,13 @@ export default function Ec2TablesPanel({ section, pageKey, onNavChange, editMode
         <AdminEditBar dirty={dirty} saving={saving} onSave={save} onDiscard={discard} />
       )}
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <MobilePanelPicker
+        parts={parts} selectedPartId={selectedPart} tablesForPart={tablesForPart}
+        allTables={ALL_TABLES} activeId={activeTable} accentColor={ACCENT}
+        onSelectPart={selectPart} onSelectTable={selectTable}
+      />
+
+      <div className="ec-tables-layout" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
       {/* Panel 1: EN 1992 parts */}
       <ResizablePanel defaultWidth={170} maxWidth={280} accentHover="#6ee7b7">

@@ -61,7 +61,7 @@ export function EcTabBar({ tabs, active, accentColor, onChange, rightSlot }: {
   rightSlot?:  React.ReactNode
 }) {
   return (
-    <div style={{
+    <div className="ec-tab-bar" style={{
       background: '#fff',
       borderBottom: '1px solid #e2e8f0',
       padding: '0 20px',
@@ -69,11 +69,14 @@ export function EcTabBar({ tabs, active, accentColor, onChange, rightSlot }: {
       alignItems: 'center',
       gap: 2,
       flexShrink: 0,
+      overflowX: 'auto',
+      scrollbarWidth: 'none' as const,
     }}>
       {tabs.map(tab => {
         const isActive = active === tab.id
         return (
           <button key={tab.id} onClick={() => onChange(tab.id)}
+            title={tab.label}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '11px 16px',
@@ -86,18 +89,20 @@ export function EcTabBar({ tabs, active, accentColor, onChange, rightSlot }: {
               cursor: 'pointer',
               marginBottom: -1,
               transition: 'color 0.12s',
+              flexShrink: 0,
+              whiteSpace: 'nowrap' as const,
             }}
             onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#1e293b' }}
             onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = '#64748b' }}>
             <span style={{ display: 'flex', alignItems: 'center', opacity: isActive ? 1 : 0.6 }}>
               {tab.icon}
             </span>
-            {tab.label}
+            <span className="ec-tab-label">{tab.label}</span>
           </button>
         )
       })}
       {rightSlot && (
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', paddingLeft: 12 }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', paddingLeft: 12, flexShrink: 0 }}>
           {rightSlot}
         </div>
       )}

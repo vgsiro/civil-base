@@ -121,8 +121,6 @@ export default function NotificationsPage() {
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    // Seed user + cached profile from the session first so the nav avatar shows the real image
-    // on first paint instead of the default circle until the network fetch returns.
     supabase.auth.getSession().then(({ data: { session } }) => {
       const su = session?.user
       if (su) {
@@ -142,20 +140,23 @@ export default function NotificationsPage() {
         try { localStorage.setItem(`civilbase_profile_${u.id}`, JSON.stringify(p)) } catch {}
       }
       await loadNotifications(u.id)
-
-      const sub = supabase.channel('notif-page-' + u.id)
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${u.id}` }, async payload => {
-          const n = payload.new as Notification
-          const actorRes = n.actor_id
-            ? await supabase.from('profiles').select('username, display_name, full_name, avatar_color, avatar_url').eq('id', n.actor_id).single()
-            : { data: null }
-          setNotifications(prev => [{ ...n, actor: actorRes.data ?? undefined } as Notification, ...prev])
-          setUnreadNotifs(c => c + 1)
-        })
-        .subscribe()
-      return () => { sub.unsubscribe() }
     })
   }, [])
+
+  useEffect(() => {
+    if (!user) return
+    const sub = supabase.channel('notif-page-' + user.id)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, async payload => {
+        const n = payload.new as Notification
+        const actorRes = n.actor_id
+          ? await supabase.from('profiles').select('username, display_name, full_name, avatar_color, avatar_url').eq('id', n.actor_id).single()
+          : { data: null }
+        setNotifications(prev => [{ ...n, actor: actorRes.data ?? undefined } as Notification, ...prev])
+        setUnreadNotifs(c => c + 1)
+      })
+      .subscribe()
+    return () => { sub.unsubscribe() }
+  }, [user?.id])
 
   async function loadNotifications(uid: string) {
     const { data } = await supabase
@@ -535,7 +536,7 @@ export default function NotificationsPage() {
         {...chat.dropdownHandlers}
       />
 
-      <div style={{ maxWidth: 680, margin: '16px auto', padding: '0 12px' }}>
+      <div className="single-col-page" style={{ maxWidth: 680, margin: '16px auto', padding: '0 12px' }}>
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e4e6eb', overflow: 'hidden' }}>
 
           {/* Header */}

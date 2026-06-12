@@ -28,7 +28,7 @@ export default function ProfileIntroCard({ profile, joined, isOwnProfile, onEdit
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 72 }}>
+    <div className="profile-left-sidebar" style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'sticky', top: 72 }}>
       {/* Intro card */}
       <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e4e6eb', padding: '16px' }}>
         <div style={{ fontSize: 20, fontWeight: 800, color: '#050505', marginBottom: 14 }}>{t('section_intro')}</div>

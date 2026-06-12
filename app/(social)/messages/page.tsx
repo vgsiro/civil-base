@@ -315,10 +315,10 @@ function MessagesPage() {
       </div>
 
       {/* Body */}
-      <div style={{ flex: 1, maxWidth: 1060, width: '100%', margin: '16px auto', display: 'grid', gridTemplateColumns: '360px 1fr', gap: 0, background: '#fff', borderRadius: 12, border: '1px solid #e4e6eb', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', height: 'calc(100vh - 88px)' }}>
+      <div className="messages-grid" style={{ flex: 1, maxWidth: 1060, width: '100%', margin: '16px auto', display: 'grid', gridTemplateColumns: '360px 1fr', gap: 0, background: '#fff', borderRadius: 12, border: '1px solid #e4e6eb', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', overflow: 'hidden', height: 'calc(100vh - 88px)' }}>
 
         {/* ── INBOX LIST ── */}
-        <div style={{ borderRight: '1px solid #e4e6eb', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className={`messages-inbox${!activeConvId ? ' active' : ''}`} style={{ borderRight: '1px solid #e4e6eb', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Inbox header */}
           <div style={{ padding: '16px 16px 10px', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
@@ -419,9 +419,14 @@ function MessagesPage() {
 
         {/* ── CONVERSATION PANEL ── */}
         {activeConvId && peerProfile ? (
-          <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div className={`messages-convo${activeConvId ? ' active' : ''}`} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {/* Header */}
             <div style={{ padding: '12px 16px', borderBottom: '1px solid #e4e6eb', display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, background: '#fff' }}>
+              {/* Mobile back button */}
+              <button onClick={() => setActiveConvId(null)} className="mobile-back-btn"
+                style={{ display: 'none', width: 32, height: 32, borderRadius: '50%', border: 'none', background: '#f0f2f5', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                ←
+              </button>
               <a href={`/u/${peerProfile.username}`} style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Avatar name={peerProfile.display_name || peerProfile.full_name} colorIndex={peerProfile.avatar_color ?? 0} photoUrl={peerProfile.avatar_url} size={40} />
                 <div>

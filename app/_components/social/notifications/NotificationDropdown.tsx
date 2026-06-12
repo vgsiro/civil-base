@@ -702,10 +702,10 @@ export default function NotificationDropdown({ userId, unreadCount, onUnreadChan
       {/* Trigger */}
       <button
         onClick={() => setOpen(v => !v)}
-        style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', border: 'none', background: open ? '#dbeafe' : '#e4e6eb', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.15s' }}
+        style={{ position: 'relative', width: 32, height: 32, borderRadius: '50%', border: 'none', background: open ? '#dbeafe' : '#e4e6eb', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.15s' }}
         onMouseEnter={e => { e.currentTarget.style.background = '#dbeafe' }}
         onMouseLeave={e => { e.currentTarget.style.background = open ? '#dbeafe' : '#e4e6eb' }}>
-        <Bell size={20} color={open ? '#2563eb' : '#65676b'} />
+        <Bell size={16} color={open ? '#2563eb' : '#65676b'} />
         {unreadCount > 0 && (
           <span style={{ position: 'absolute', top: 2, right: 2, background: '#ef4444', color: '#fff', borderRadius: '50%', minWidth: 17, height: 17, fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff', padding: '0 2px' }}>
             {unreadCount > 9 ? '9+' : unreadCount}
@@ -759,7 +759,7 @@ export default function NotificationDropdown({ userId, unreadCount, onUnreadChan
 
       {/* Dropdown */}
       {open && (
-        <div style={{ position: 'fixed', top: 60, right: 8, width: 380, maxHeight: '82vh', background: '#fff', borderRadius: 12, boxShadow: '0 8px 40px rgba(0,0,0,0.22)', border: '1px solid #e4e6eb', zIndex: 500, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="nav-dropdown-panel" style={{ position: 'fixed', top: 60, right: 8, width: 380, maxHeight: '82vh', background: '#fff', borderRadius: 12, boxShadow: '0 8px 40px rgba(0,0,0,0.22)', border: '1px solid #e4e6eb', zIndex: 500, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
           {/* Header */}
           <div style={{ padding: '14px 16px 6px', flexShrink: 0 }}>

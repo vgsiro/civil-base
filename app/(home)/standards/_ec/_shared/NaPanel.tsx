@@ -1,5 +1,6 @@
 'use client'
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { TablesList, TableEntry } from './TablesList'
 import PageDiscussion from '../../../../_components/home/discussion/PageDiscussion'
 
@@ -156,8 +157,118 @@ export default function NaPanel({
 
   const activeContent = items.find(i => i.id === activeItemId)?.content
 
+  const allNaFlat = useMemo<TableEntry[]>(() =>
+    countries.flatMap(c =>
+      c.sections.flatMap(s =>
+        s.items.map(i => ({ id: i.id, number: i.number, name: i.name, partId: `${c.id}|${s.id}`, partCode: `${c.name} — ${s.code}` }))
+      )
+    )
+  , [countries])
+
+  const [naSearchQuery, setNaSearchQuery] = useState('')
+  const naSearchInputRef = useRef<HTMLInputElement>(null)
+  const naSearchBoxRef = useRef<HTMLDivElement>(null)
+  const [naDropdownPos, setNaDropdownPos] = useState<{ top: number; left: number; width: number } | null>(null)
+  const [naMounted, setNaMounted] = useState(false)
+  useEffect(() => { setNaMounted(true) }, [])
+
+  const naSearchResults = useMemo(() => {
+    const q = naSearchQuery.trim().toLowerCase()
+    if (!q) return []
+    return allNaFlat.filter(t =>
+      t.number.toLowerCase().includes(q) ||
+      t.name.toLowerCase().includes(q) ||
+      t.partCode.toLowerCase().includes(q)
+    )
+  }, [naSearchQuery, allNaFlat])
+
+  const naIsSearching = naSearchQuery.trim().length > 0
+
+  useEffect(() => {
+    if (!naIsSearching || !naSearchBoxRef.current) { setNaDropdownPos(null); return }
+    const r = naSearchBoxRef.current.getBoundingClientRect()
+    const margin = 8
+    const left = Math.max(margin, r.left)
+    const right = Math.min(window.innerWidth - margin, r.right)
+    setNaDropdownPos({ top: r.bottom + 4, left, width: right - left })
+  }, [naIsSearching, naSearchQuery])
+
+  useEffect(() => {
+    if (!naIsSearching) return
+    const handler = (e: MouseEvent) => {
+      if (naSearchBoxRef.current && !naSearchBoxRef.current.contains(e.target as Node)) setNaSearchQuery('')
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [naIsSearching])
+
   return (
-    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+    <>
+    {/* Mobile two-dropdown + search — hidden on desktop */}
+    <div className="ec-table-mobile-picker" style={{ display: 'none', flexDirection: 'column', gap: 6, padding: '8px 12px', borderBottom: '1px solid #e2e8f0', background: '#fff', flexShrink: 0 }}>
+      {/* Country dropdown */}
+      <select
+        value={selectedCountry}
+        onChange={e => {
+          const c = countries.find(c => c.id === e.target.value)
+          if (c) selectSection(c.id, c.sections[0]?.id ?? '')
+        }}
+        style={{ width: '100%', padding: '7px 8px', borderRadius: 8, border: `1.5px solid ${accentColor}44`, background: '#f8fafc', fontSize: 12, fontWeight: 600, color: '#1e293b', outline: 'none' }}
+      >
+        {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+      {/* Section dropdown */}
+      <select
+        value={selectedSection}
+        onChange={e => {
+          const c = countries.find(c => c.id === selectedCountry)
+          if (c) selectSection(c.id, e.target.value)
+        }}
+        style={{ width: '100%', padding: '7px 8px', borderRadius: 8, border: `1.5px solid ${accentColor}44`, background: '#f8fafc', fontSize: 12, fontWeight: 600, color: '#1e293b', outline: 'none' }}
+      >
+        {(countries.find(c => c.id === selectedCountry)?.sections ?? []).map(s => (
+          <option key={s.id} value={s.id}>{s.code}</option>
+        ))}
+      </select>
+      {/* Search */}
+      <div ref={naSearchBoxRef} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', border: `1px solid ${naIsSearching ? accentColor + '66' : '#e2e8f0'}`, borderRadius: 8, padding: '6px 10px' }}>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ flexShrink: 0, color: '#94a3b8' }}>
+          <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth="1.4"/>
+          <line x1="7.5" y1="7.5" x2="11" y2="11" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+        </svg>
+        <input ref={naSearchInputRef} value={naSearchQuery} onChange={e => setNaSearchQuery(e.target.value)}
+          placeholder="Search all NA items…"
+          style={{ border: 'none', background: 'transparent', outline: 'none', fontSize: 12, color: '#1e293b', width: '100%' }} />
+        {naSearchQuery && (
+          <button onClick={() => { setNaSearchQuery(''); naSearchInputRef.current?.focus() }}
+            style={{ border: 'none', background: 'none', cursor: 'pointer', padding: 0, color: '#94a3b8', fontSize: 16, lineHeight: 1 }}>×</button>
+        )}
+      </div>
+      {/* Search results portal */}
+      {naMounted && naIsSearching && naDropdownPos && createPortal(
+        <div style={{ position: 'fixed', top: naDropdownPos.top, left: naDropdownPos.left, width: naDropdownPos.width, maxHeight: 260, overflowY: 'auto', borderRadius: 8, border: '1px solid #e2e8f0', background: '#fff', boxShadow: '0 8px 24px rgba(0,0,0,0.15)', zIndex: 9999 }}>
+          {naSearchResults.length === 0
+            ? <div style={{ padding: '10px 12px', fontSize: 12, color: '#94a3b8', fontStyle: 'italic' }}>No results</div>
+            : naSearchResults.map(t => {
+              const [cId, sId] = t.partId.split('|')
+              return (
+                <button key={t.id} onClick={() => { selectSection(cId, sId); onNavChange('section', t.id); setNaSearchQuery('') }}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', width: '100%', padding: '8px 12px', background: t.id === activeItemId ? `${accentColor}12` : 'transparent', border: 'none', borderBottom: '1px solid #f1f5f9', cursor: 'pointer', textAlign: 'left' }}
+                  onMouseEnter={e => { if (t.id !== activeItemId) e.currentTarget.style.background = '#f8fafc' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = t.id === activeItemId ? `${accentColor}12` : 'transparent' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: accentColor }}>{t.number}</span>
+                  <span style={{ fontSize: 11, color: '#1e293b', lineHeight: 1.3 }}>{t.name}</span>
+                  <span style={{ fontSize: 10, color: '#94a3b8', marginTop: 1 }}>{t.partCode}</span>
+                </button>
+              )
+            })
+          }
+        </div>,
+        document.body
+      )}
+    </div>
+
+    <div className="ec-tables-layout" style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
 
       {/* ── Panel 1: Countries ────────────────────────────────────────────────── */}
       <ResizablePanel defaultWidth={200} maxWidth={280} accentHover={accentHover}>
@@ -262,5 +373,6 @@ export default function NaPanel({
       </div>
 
     </div>
+    </>
   )
 }

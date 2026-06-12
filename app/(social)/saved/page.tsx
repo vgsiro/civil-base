@@ -155,7 +155,7 @@ export default function SavedPage() {
         {...chat.dropdownHandlers}
       />
 
-      <div style={{ maxWidth: 1050, margin: '16px auto', padding: '0 12px', display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16, alignItems: 'start' }}>
+      <div className="saved-grid" style={{ maxWidth: 1050, margin: '16px auto', padding: '0 12px', display: 'grid', gridTemplateColumns: '280px 1fr', gap: 16, alignItems: 'start' }}>
 
         {/* ── Left: Collections sidebar ── */}
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e4e6eb', overflow: 'hidden', position: 'sticky', top: 68 }}>

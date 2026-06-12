@@ -158,7 +158,7 @@ export function RectResultsPanel({
   const ok_N = inp.NEd >= res.NRd_c && inp.NEd <= res.NRd_t
 
   return (
-    <div style={{ flex: 1, minWidth: 0, overflowY: 'visible', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}
+    <div className="rect-results-panel" style={{ flex: 1, minWidth: 0, overflowY: 'visible', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}
       onClick={() => spacingPop && setSpacingPop(null)}
     >
       {spacingPop && (

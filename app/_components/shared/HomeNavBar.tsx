@@ -15,13 +15,15 @@ import { useTranslation } from '../../i18n/LanguageContext'
 interface Props {
   /** Content shown between the logo and the right icons (breadcrumb, title, etc.) */
   children?: React.ReactNode
+  /** Always-visible slot on mobile (e.g. a dropdown that must stay accessible) */
+  mobileSlot?: React.ReactNode
   /** Dark header background — uses white text/icons */
   dark?: boolean
   /** Page label shown as context badge in the feedback modal */
   pageLabel?: string
 }
 
-export default function HomeNavBar({ children, dark = false, pageLabel }: Props) {
+export default function HomeNavBar({ children, mobileSlot, dark = false, pageLabel }: Props) {
   const { t } = useTranslation()
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -128,29 +130,34 @@ export default function HomeNavBar({ children, dark = false, pageLabel }: Props)
         </div>
       )}
 
-      <div style={{
+      <div className="homenav-row" style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '0 16px', height: 56, flexShrink: 0,
       }}>
         {/* Logo */}
         <a href="/" style={logoStyle}>
-          <img src="/logo.png" alt="CivilAxis" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
-          <span style={{ fontSize: 13, fontWeight: 700, color: dark ? '#f1f5f9' : '#1e3a5f' }}>CivilAxis</span>
+          <img src="/logo.png" alt="CivilAxis" style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover' }} />
+          <span className="homenav-logo-text" style={{ fontSize: 13, fontWeight: 700, color: dark ? '#f1f5f9' : '#1e3a5f' }}>CivilAxis</span>
         </a>
 
-        {/* Breadcrumb slot */}
+        {/* Breadcrumb slot — hidden on mobile */}
         {children && (
-          <>
-            <span style={{ color: dark ? '#475569' : '#d1d5db', fontSize: 16 }}>/</span>
+          <div className="homenav-breadcrumb" style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+            <span style={{ color: dark ? '#475569' : '#d1d5db', fontSize: 16, flexShrink: 0 }}>/</span>
             {children}
-          </>
+          </div>
+        )}
+
+        {/* Mobile-visible slot (e.g. EC dropdown) — hidden on desktop */}
+        {mobileSlot && (
+          <div className="homenav-mobile-slot" style={{ flexShrink: 0 }}>{mobileSlot}</div>
         )}
 
         <div style={{ flex: 1 }} />
 
         {/* Donate button — only on tool pages */}
         {pageLabel && (
-          <a href="/donate"
+          <a href="/donate" className="homenav-extra-btn"
             title="Support CivilAxis — buy me a coffee ☕"
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', height: 34, borderRadius: 8, border: `1.5px solid ${dark ? 'rgba(255,255,255,0.2)' : 'transparent'}`, background: 'transparent', cursor: 'pointer', color: dark ? 'rgba(255,255,255,0.8)' : '#65676b', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' as const, textDecoration: 'none' }}
             onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.background = dark ? 'rgba(255,255,255,0.1)' : '#f0f2f5'; (e.currentTarget as HTMLAnchorElement).style.color = dark ? '#fff' : '#050505' }}
@@ -161,6 +168,7 @@ export default function HomeNavBar({ children, dark = false, pageLabel }: Props)
 
         {/* Feedback button */}
         <button
+          className="homenav-extra-btn"
           onClick={() => setShowFeedback(true)}
           title={pageLabel ? `Report an issue or give feedback about ${pageLabel}` : 'Send feedback or report an issue'}
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', height: 34, borderRadius: 8, border: `1.5px solid ${dark ? 'rgba(255,255,255,0.2)' : 'transparent'}`, background: 'transparent', cursor: 'pointer', color: dark ? 'rgba(255,255,255,0.8)' : '#65676b', fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap' as const }}
@@ -171,6 +179,7 @@ export default function HomeNavBar({ children, dark = false, pageLabel }: Props)
 
         {/* Community button */}
         <button
+          className="homenav-extra-btn"
           onClick={() => setShowConfirm(true)}
           title="Go to the CivilAxis community feed"
           style={communityBtnStyle}
@@ -205,7 +214,7 @@ export default function HomeNavBar({ children, dark = false, pageLabel }: Props)
               avatarUrl={profile?.avatar_url ?? null}
               displayName={displayName}
               profileUsername={profile?.username ?? null}
-              size={42}
+              size={34}
               dark={dark}
             />
           </>

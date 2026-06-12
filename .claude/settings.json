@@ -221,12 +221,14 @@
       "Bash(dir /s /b \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\*username*\")",
       "Bash(dir /s /b \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\_components\\\\social\\\\post\\\\*.tsx\")",
       "Bash(dir /s /b \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\_components\\\\social\\\\post\\\\Poll*\")",
-      "Bash(xargs grep -l -i \"donat\")"
+      "Bash(xargs grep -l -i \"donat\")",
+      "Bash(Remove-Item \"D:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\.git\\\\index.lock\" -Force)"
     ],
     "additionalDirectories": [
       "D:\\CODE\\08. Civil Engineering Data\\lecture-notes\\app\\post\\[id]",
       "d:\\tmp",
-      "D:\\CODE\\08. Civil Engineering Data\\lecture-notes\\app\\(social)\\u\\[username]"
+      "D:\\CODE\\08. Civil Engineering Data\\lecture-notes\\app\\(social)\\u\\[username]",
+      "D:\\CODE\\08. Civil Engineering Data\\lecture-notes\\.git"
     ]
   }
 }

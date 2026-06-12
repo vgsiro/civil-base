@@ -104,7 +104,7 @@ export default function AppHeader({
     {user && chat.openChats.map((c, i) => (
       <ChatBox key={c.convId} userId={user.id} {...chat.chatBoxProps(c, i)} />
     ))}
-    <div style={{ background: '#1e293b', color: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+    <div className="home-appheader" style={{ background: '#1e293b', color: 'white', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
       {showFeedbackModal && (
         <FeedbackModal user={user} onClose={() => setShowFeedbackModal(false)} />
       )}
@@ -134,8 +134,8 @@ export default function AppHeader({
         style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0, opacity: 1, transition: 'opacity 0.15s' }}
         onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>
-        <img src="/logo.png" alt="CivilAxis" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
-        <h1 style={{ fontSize: '18px', fontWeight: '700', color: 'white', margin: 0 }}>CivilAxis</h1>
+        <img src="/logo.png" alt="CivilAxis" style={{ width: 42, height: 42, borderRadius: '50%', objectFit: 'cover' }} />
+        <h1 className="home-nav-btn-label" style={{ fontSize: '18px', fontWeight: '700', color: 'white', margin: 0 }}>CivilAxis</h1>
       </a>
 
       {/* Search */}
@@ -282,15 +282,16 @@ export default function AppHeader({
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', height: 34, borderRadius: 8, border: '1.5px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}>
-          🌐 {t('home_nav_community')}
+          🌐 <span className="home-nav-btn-label">{t('home_nav_community')}</span>
         </button>
         <button
           onClick={() => setShowFeedbackModal(true)}
           title={t('home_nav_feedback_tip')}
+          className="home-nav-feedback-btn"
           style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '0 12px', height: 34, borderRadius: 8, border: '1.5px solid rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff' }}
           onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.8)' }}>
-          💬 {t('home_nav_send_feedback')}
+          💬 <span className="home-nav-btn-label">{t('home_nav_send_feedback')}</span>
         </button>
         {user ? (
           <>
@@ -302,7 +303,7 @@ export default function AppHeader({
               {...chat.dropdownHandlers}
             />
             <NotificationDropdown userId={user.id} unreadCount={unreadNotifs} onUnreadChange={setUnreadNotifs} />
-            <AccountMenu user={user} profile={currentProfile} avatarColor={profileAvatarColor} avatarUrl={profileAvatarUrl} displayName={profileDisplayName} profileUsername={profileUsername} size={42} dark={true} onSignOut={onSignOut} />
+            <AccountMenu user={user} profile={currentProfile} avatarColor={profileAvatarColor} avatarUrl={profileAvatarUrl} displayName={profileDisplayName} profileUsername={profileUsername} size={34} dark={true} onSignOut={onSignOut} />
           </>
         ) : (
           <button onClick={onSignIn}

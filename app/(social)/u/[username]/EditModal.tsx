@@ -239,8 +239,9 @@ export default function EditModal({ user, profile, onClose, onSaved }: {
     if (slug.length >= 3 && (usernameAvail === true || slug === profile.username)) {
       profileUpdates.username = slug
     }
-    await supabase.from('profiles').upsert(profileUpdates, { onConflict: 'id' })
+    const { error } = await supabase.from('profiles').upsert(profileUpdates, { onConflict: 'id' })
     setSaving(false)
+    if (error) { setMsg(`Error: ${error.message}`); return }
 
     setMsg(professionalChanged ? t('msg_saved_pending_verify') : t('msg_saved'))
     setTimeout(() => {

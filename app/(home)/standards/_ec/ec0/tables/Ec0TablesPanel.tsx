@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from '@/app/i18n/LanguageContext'
 import PageDiscussion from '../../../../../_components/home/discussion/PageDiscussion'
 import { PartialFactorsTable, PsiFactorsTable } from './Ec0Tables'
-import { TablesList, TableEntry } from '../../_shared/TablesList'
+import { TablesList, MobilePanelPicker, TableEntry } from '../../_shared/TablesList'
 import { useAdminEdit } from '../../_shared/admin/useAdminEdit'
 import { EditableText } from '../../_shared/admin/EditableText'
 import { AdminEditBar } from '../../_shared/admin/AdminSaveBar'
@@ -152,7 +152,13 @@ export default function Ec0TablesPanel({ section, pageKey, onNavChange, editMode
         <AdminEditBar dirty={dirty} saving={saving} onSave={save} onDiscard={discard} />
       )}
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <MobilePanelPicker
+        parts={parts} selectedPartId={selectedPart} tablesForPart={tablesForPart}
+        allTables={ALL_TABLES} activeId={activeTable} accentColor={ACCENT}
+        onSelectPart={selectPart} onSelectTable={selectTable}
+      />
+
+      <div className="ec-tables-layout" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
       {/* Panel 1: EN 1990 parts */}
       <ResizablePanel defaultWidth={190} maxWidth={300} accentHover="#a5b4fc">

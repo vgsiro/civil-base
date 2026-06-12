@@ -2,6 +2,9 @@
 /* Always reserve the vertical scrollbar gutter so centered layouts don't shift left/right
    when content grows tall enough to add a scrollbar (the F5 layout-shift flash). */
 html { scrollbar-gutter: stable; }
+@media (max-width: 768px) {
+  html, body { overflow-x: hidden; max-width: 100vw; }
+}
 .row-label sub { font-size: 0.75em; }
 .katex-formula-wrap::-webkit-scrollbar { display: none; }
 .katex-formula-wrap .katex-html .base { display: inline !important; width: auto !important; }
@@ -10,6 +13,123 @@ body {
   background: #f5f5f5;
 }
 body.modal-open { overflow: hidden; }
+
+/* ── Mobile responsive ────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Feed: 3-col → single col center */
+  .feed-grid { grid-template-columns: 1fr !important; padding: 8px !important; }
+  .feed-left-sidebar { display: none !important; }
+  .feed-right-sidebar { display: none !important; }
+  .feed-center { max-width: 100% !important; }
+
+  /* Bottom nav bar (mobile only) */
+  .mobile-bottom-nav { display: flex !important; }
+  /* Add bottom padding so last post isn't hidden behind bottom nav */
+  .feed-grid { padding-bottom: 72px !important; }
+
+  /* Profile: 2-col → single col */
+  .profile-grid { grid-template-columns: 1fr !important; padding: 0 8px 80px !important; }
+  .profile-left-sidebar { position: static !important; width: 100% !important; }
+
+  /* Profile header: shrink cover + avatar */
+  .profile-cover { height: 180px !important; }
+  .profile-header-row { padding: 0 12px !important; margin-top: -32px !important; gap: 10px !important; }
+  .profile-avatar-circle { width: 88px !important; height: 88px !important; font-size: 36px !important; }
+  .profile-identity { padding-top: 36px !important; }
+  .profile-display-name { font-size: 18px !important; }
+  .profile-tab-bar { margin: 8px 12px 0 !important; }
+
+  /* Saved: 2-col → single col, collections go above */
+  .saved-grid { grid-template-columns: 1fr !important; padding: 0 8px 80px !important; }
+
+  /* Messages: show only one panel at a time */
+  .messages-grid { grid-template-columns: 1fr !important; height: calc(100vh - 56px) !important; margin: 0 !important; border-radius: 0 !important; border-left: none !important; border-right: none !important; }
+  .messages-inbox { display: none; }
+  .messages-inbox.active { display: flex !important; flex-direction: column; }
+  .messages-convo { display: none; }
+  .messages-convo.active { display: flex !important; flex-direction: column; }
+
+  /* TopNavBar: hide text labels, shrink right section */
+  .topnav-logo-text { display: none !important; }
+  .topnav-civilbase-link { display: none !important; }
+  .topnav-right { min-width: unset !important; gap: 2px !important; }
+  .topnav-search-btn span { display: none !important; }
+  .topnav-search-expanded { width: 160px !important; }
+
+  /* Notifications / recents: just padding */
+  .single-col-page { padding: 0 8px 80px !important; }
+
+  /* Messages back button */
+  .mobile-back-btn { display: flex !important; }
+
+  /* Topic picker in compose box: show dropdown, hide pills */
+  .topic-select-mobile { display: block !important; }
+  .topic-pills-desktop { display: none !important; }
+
+  /* TopNav category: show dropdown, hide icon buttons */
+  .topnav-category-select { display: block !important; }
+  .topnav-category-pills { display: none !important; }
+
+  /* Nav dropdowns: full width, anchored to screen edges */
+  .nav-dropdown-panel { left: 4px !important; right: 4px !important; width: auto !important; }
+
+  /* Home page */
+  .home-hero { padding: 16px 12px !important; }
+  .home-section { padding-left: 12px !important; padding-right: 12px !important; }
+  .home-toolbar { padding: 10px 12px !important; flex-wrap: wrap !important; }
+  .home-card-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; }
+
+  /* Home AppHeader: shrink padding, hide text labels */
+  .home-appheader { padding: 8px 10px !important; gap: 8px !important; }
+  .home-nav-btn-label { display: none !important; }
+  .home-nav-feedback-btn { display: none !important; }
+
+  /* EC tab bar: icon-only on mobile */
+  .ec-tab-bar { padding: 0 8px !important; }
+  .ec-tab-label { display: none !important; }
+
+  /* EC tables/NA split panels: hide side panels, show mobile picker, let content fill full width */
+  .ec-tables-layout > :nth-child(-n+2) { display: none !important; }
+  .ec-tables-layout > :last-child { padding: 16px 16px 20px !important; }
+  .ec-table-mobile-picker { display: flex !important; }
+
+  /* EC overview: reduce side padding */
+  .ec-overview-body { padding: 16px 14px !important; }
+
+  /* EC2 rect section check: stack vertically on mobile */
+  .ec-tool-shell { overflow-y: auto !important; overflow-x: hidden !important; }
+  .rect-tool-layout { flex-direction: column !important; }
+  .rect-input-panel { width: 100% !important; min-height: unset !important; border-right: none !important; border-bottom: 1px solid #e2e8f0 !important; }
+  .rect-results-panel { padding: 12px 12px !important; }
+  .rect-uls-grid { grid-template-columns: 1fr !important; }
+
+  /* PostModal: single column on mobile — hide left image panel, show inline */
+  .post-modal-shell { width: 96vw !important; max-width: 96vw !important; height: 92vh !important; }
+  .post-modal-image { display: none !important; }
+  .post-modal-comments { width: 100% !important; flex: 1 !important; }
+  .post-modal-inline-image { display: block !important; }
+
+  /* PostCard action bar: icon-only on mobile */
+  .postcard-action-label { display: none !important; }
+
+  /* HomeNavBar: hide logo text, breadcrumb + extra buttons on mobile */
+  .homenav-row { gap: 6px !important; padding: 0 8px !important; }
+  .homenav-logo-text { display: none !important; }
+  .homenav-extra-btn { display: none !important; }
+  .homenav-breadcrumb { display: none !important; }
+}
+
+@media (min-width: 769px) {
+  .mobile-bottom-nav { display: none !important; }
+  .messages-inbox { display: flex !important; flex-direction: column; }
+  .messages-convo { display: flex !important; flex-direction: column; }
+  .homenav-mobile-slot { display: none !important; }
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
 [contenteditable] img { max-width: 100%; border-radius: 6px; margin: 4px 0; display: block; }
 [contenteditable] ul, [contenteditable] ol { padding-left: 20px; }
 [contenteditable] li { margin-bottom: 2px; }

@@ -14,6 +14,7 @@ import PostCard from '../../../_components/social/post/PostCard'
 import CreatePost from '../../../_components/social/post/CreatePost'
 import AccountMenu from '../../../_components/social/user/AccountMenu'
 import TopNavBar from '../../../_components/social/feed/TopNavBar'
+import MobileBottomNav from '../../../_components/social/feed/MobileBottomNav'
 import VerifyModal from '../../../_components/shared/VerifyModal'
 import PhotoModal from '../../../_components/home/PhotoModal'
 import ChatBox from '../../../_components/social/messaging/ChatBox'
@@ -594,7 +595,7 @@ export default function PublicProfilePage() {
         <div style={{ maxWidth: 1050, margin: '0 auto' }}>
 
           {/* Cover photo */}
-          <div style={{ position: 'relative', height: 348, borderRadius: '0 0 8px 8px', overflow: 'hidden', background: profile.cover_url ? 'transparent' : COVER_COLORS[colorIndex] }}>
+          <div className="profile-cover" style={{ position: 'relative', height: 348, borderRadius: '0 0 8px 8px', overflow: 'hidden', background: profile.cover_url ? 'transparent' : COVER_COLORS[colorIndex] }}>
             {profile.cover_url
               ? <img src={profile.cover_url} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               : <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.12)' }} />
@@ -608,9 +609,9 @@ export default function PublicProfilePage() {
           </div>
 
           {/* Avatar + identity */}
-          <div style={{ padding: '0 24px', display: 'flex', alignItems: 'flex-start', gap: 16, marginTop: -36 }}>
+          <div className="profile-header-row" style={{ padding: '0 24px', display: 'flex', alignItems: 'flex-start', gap: 16, marginTop: -36 }}>
             <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div style={{ width: 168, height: 168, borderRadius: '50%', background: AVATAR_COLORS[colorIndex], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 68, fontWeight: 900, color: '#fff', border: '4px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
+              <div className="profile-avatar-circle" style={{ width: 168, height: 168, borderRadius: '50%', background: AVATAR_COLORS[colorIndex], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 68, fontWeight: 900, color: '#fff', border: '4px solid #fff', boxShadow: '0 2px 8px rgba(0,0,0,0.18)', overflow: 'hidden' }}>
                 {profile.avatar_url
                   ? <img src={profile.avatar_url} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   : initial
@@ -624,10 +625,10 @@ export default function PublicProfilePage() {
               )}
             </div>
 
-            <div style={{ flex: 1, paddingTop: 44, paddingBottom: 12, minWidth: 0 }}>
+            <div className="profile-identity" style={{ flex: 1, paddingTop: 44, paddingBottom: 12, minWidth: 0 }}>
               {/* Name + verified badge */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const }}>
-                <span style={{ fontSize: 28, fontWeight: 900, color: '#050505', lineHeight: 1.15 }}>{displayName}</span>
+                <span className="profile-display-name" style={{ fontSize: 28, fontWeight: 900, color: '#050505', lineHeight: 1.15 }}>{displayName}</span>
                 {profile.is_verified && (
                   <span
                     title={[profile.profession, ...(profile.specializations ?? [])].filter(Boolean).map(tp).join(' · ')}
@@ -799,7 +800,7 @@ export default function PublicProfilePage() {
           </div>
 
           {/* Tab bar */}
-          <div style={{ display: 'flex', gap: 2, borderTop: '1px solid #e4e6eb', margin: '12px 24px 0' }}>
+          <div className="profile-tab-bar" style={{ display: 'flex', gap: 2, borderTop: '1px solid #e4e6eb', margin: '12px 24px 0' }}>
             {(['posts', 'about'] as Tab[]).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 style={{ padding: '14px 20px', border: 'none', background: 'none', cursor: 'pointer', fontSize: 15, fontWeight: 700, color: activeTab === tab ? '#3b82f6' : '#65676b', position: 'relative', borderRadius: '8px 8px 0 0' }}
@@ -816,7 +817,7 @@ export default function PublicProfilePage() {
       </div>
 
       {/* ═══ CONTENT ═══ */}
-      <div style={{ maxWidth: 1050, margin: '0 auto', padding: '16px 24px', display: 'grid', gridTemplateColumns: '380px 1fr', gap: 16, alignItems: 'start' }}>
+      <div className="profile-grid" style={{ maxWidth: 1050, margin: '0 auto', padding: '16px 24px', display: 'grid', gridTemplateColumns: '380px 1fr', gap: 16, alignItems: 'start' }}>
 
         {/* ── LEFT: Intro (sticky) ── */}
         <ProfileIntroCard
@@ -949,6 +950,7 @@ export default function PublicProfilePage() {
           )}
         </div>
       </div>
+      <MobileBottomNav user={currentUser} onSignInPrompt={() => {}} />
     </div>
   )
 }

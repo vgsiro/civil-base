@@ -9,7 +9,7 @@ import {
   Table713, Table714, Table715, Table716,
   Table81, Table82,
 } from '../tools/wind/WindTables'
-import { TablesList, TableEntry } from '../../_shared/TablesList'
+import { TablesList, MobilePanelPicker, TableEntry } from '../../_shared/TablesList'
 import { useAdminEdit } from '../../_shared/admin/useAdminEdit'
 import { EditableText } from '../../_shared/admin/EditableText'
 import { AdminEditBar } from '../../_shared/admin/AdminSaveBar'
@@ -197,7 +197,13 @@ export default function Ec1TablesPanel({ section, pageKey, onNavChange, editMode
         <AdminEditBar dirty={dirty} saving={saving} onSave={save} onDiscard={discard} />
       )}
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <MobilePanelPicker
+        parts={parts} selectedPartId={selectedPart} tablesForPart={tablesForPart}
+        allTables={ALL_TABLES} activeId={activeTable} accentColor={ACCENT}
+        onSelectPart={selectPart} onSelectTable={selectTable}
+      />
+
+      <div className="ec-tables-layout" style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
 
       {/* Panel 1: EN 1991 parts */}
       <ResizablePanel defaultWidth={170} maxWidth={280} accentHover="#7dd3fc">

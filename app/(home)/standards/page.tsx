@@ -169,7 +169,8 @@ function StandardsPageInner() {
   return (
     <div style={{ height: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)', flexShrink: 0 }}>
-        <HomeNavBar dark pageLabel="EC Standards">
+        <HomeNavBar dark pageLabel="EC Standards"
+          mobileSlot={<EcDropdown activeTab={activeTab} onSelect={id => router.replace(`/standards?tab=${id}`)} />}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #3b82f6, #f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <BookOpen size={16} color="#fff" />

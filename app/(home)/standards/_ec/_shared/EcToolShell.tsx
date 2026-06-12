@@ -21,7 +21,7 @@ export default function EcToolShell({ title, subtitle, accentColor, accentBg, gr
 
   if (isTool) {
     return (
-      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <div className="ec-tool-shell" style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         {children(activeSection)}
       </div>
     )

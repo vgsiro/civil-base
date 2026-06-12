@@ -127,10 +127,10 @@ export default function FriendRequestDropdown({ userId, pendingCount, onCountCha
     <div ref={ref} style={{ position: 'relative' }}>
       <button
         onClick={() => setOpen(v => !v)}
-        style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', border: 'none', background: open ? '#dbeafe' : '#e4e6eb', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.15s' }}
+        style={{ position: 'relative', width: 32, height: 32, borderRadius: '50%', border: 'none', background: open ? '#dbeafe' : '#e4e6eb', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.15s' }}
         onMouseEnter={e => { e.currentTarget.style.background = '#dbeafe' }}
         onMouseLeave={e => { e.currentTarget.style.background = open ? '#dbeafe' : '#e4e6eb' }}>
-        <Users size={20} color={open ? '#2563eb' : '#65676b'} />
+        <Users size={16} color={open ? '#2563eb' : '#65676b'} />
         {pendingCount > 0 && (
           <span style={{ position: 'absolute', top: 2, right: 2, background: '#ef4444', color: '#fff', borderRadius: '50%', minWidth: 17, height: 17, fontSize: 10, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff', padding: '0 2px' }}>
             {pendingCount > 9 ? '9+' : pendingCount}
@@ -139,7 +139,7 @@ export default function FriendRequestDropdown({ userId, pendingCount, onCountCha
       </button>
 
       {open && (
-        <div style={{ position: 'fixed', top: 60, right: 100, width: 360, maxHeight: '82vh', background: '#fff', borderRadius: 12, boxShadow: '0 8px 40px rgba(0,0,0,0.22)', border: '1px solid #e4e6eb', zIndex: 500, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div className="nav-dropdown-panel" style={{ position: 'fixed', top: 60, right: 100, width: 360, maxHeight: '82vh', background: '#fff', borderRadius: 12, boxShadow: '0 8px 40px rgba(0,0,0,0.22)', border: '1px solid #e4e6eb', zIndex: 500, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
           {/* Header */}
           <div style={{ padding: '14px 16px 10px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

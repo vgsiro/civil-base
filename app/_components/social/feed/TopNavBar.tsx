@@ -1,6 +1,7 @@
 'use client'
-import { GraduationCap, Home, Search, X as XIcon } from 'lucide-react'
+import { GraduationCap, Home, Search, X as XIcon, ChevronDown } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { supabase } from '@/lib/supabase'
 import { useTranslation } from '../../../i18n/LanguageContext'
 import type { TranslationKey } from '../../../i18n/index'
@@ -134,7 +135,24 @@ export default function TopNavBar({
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [searching, setSearching] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
+  const [showCategoryMenu, setShowCategoryMenu] = useState(false)
+  const [categoryMenuPos, setCategoryMenuPos] = useState({ top: 0, left: 0 })
+  const categoryBtnRef = useRef<HTMLButtonElement>(null)
+  const categoryMenuRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        categoryMenuRef.current && !categoryMenuRef.current.contains(e.target as Node) &&
+        categoryBtnRef.current && !categoryBtnRef.current.contains(e.target as Node)
+      ) {
+        setShowCategoryMenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Close dropdown on outside click
@@ -198,7 +216,7 @@ export default function TopNavBar({
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 8, flexShrink: 0 }}>
         <a href="/feed" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
           <img src="/logo.png" alt="CivilAxis" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+          <div className="topnav-logo-text" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
             <span style={{ fontSize: 18, fontWeight: 800, color: '#1e3a5f', letterSpacing: '-0.5px' }}>CivilAxis</span>
             <span style={{ fontSize: 11, fontWeight: 600, color: '#6366f1', letterSpacing: '0.03em' }}>Community</span>
           </div>
@@ -207,7 +225,7 @@ export default function TopNavBar({
         {/* Search trigger / expanded input */}
         <div ref={searchRef} style={{ position: 'relative' }}>
           {searchFocused ? (
-            <div style={{ display: 'flex', alignItems: 'center', background: '#f0f2f5', borderRadius: 20, padding: '0 12px', height: 36, border: '1.5px solid #3b82f6', width: 260 }}>
+            <div className="topnav-search-expanded" style={{ display: 'flex', alignItems: 'center', background: '#f0f2f5', borderRadius: 20, padding: '0 12px', height: 36, border: '1.5px solid #3b82f6', width: 260 }}>
               <Search size={14} color="#65676b" style={{ flexShrink: 0, marginRight: 8 }} />
               <input
                 autoFocus
@@ -291,35 +309,93 @@ export default function TopNavBar({
         </div>
       </div>
 
-      {/* Center: category tabs */}
+      {/* Center: category tabs (desktop) / dropdown (mobile) */}
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 2, overflowX: 'auto', scrollbarWidth: 'none' as const }}>
-        {CATEGORY_TABS.map(tab => {
-          const active = categoryFilter === tab.value
+        {/* Desktop icon buttons */}
+        <div className="topnav-category-pills" style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {CATEGORY_TABS.map(tab => {
+            const active = categoryFilter === tab.value
+            return (
+              <button key={tab.value}
+                onClick={() => onCategoryChange?.(tab.value)}
+                title={t(tab.labelKey)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 36, height: 34, borderRadius: 8, flexShrink: 0, padding: 0,
+                  border: `1.5px solid ${active ? tab.activeBorder : 'transparent'}`,
+                  background: active ? tab.activeBg : 'transparent',
+                  color: active ? tab.activeColor : '#65676b',
+                  cursor: 'pointer', transition: 'background 0.15s, color 0.15s',
+                }}
+                onMouseEnter={e => { if (!active) { e.currentTarget.style.background = '#f0f2f5'; e.currentTarget.style.color = '#050505' } }}
+                onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#65676b' } }}>
+                {tab.icon}
+              </button>
+            )
+          })}
+        </div>
+        {/* Mobile icon button (portal dropdown rendered into body) */}
+        {(() => {
+          const active = CATEGORY_TABS.find(tab => tab.value === (categoryFilter ?? 'all'))!
           return (
-            <button key={tab.value}
-              onClick={() => onCategoryChange?.(tab.value)}
-              title={t(tab.labelKey)}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 36, height: 34, borderRadius: 8, flexShrink: 0, padding: 0,
-                border: `1.5px solid ${active ? tab.activeBorder : 'transparent'}`,
-                background: active ? tab.activeBg : 'transparent',
-                color: active ? tab.activeColor : '#65676b',
-                cursor: 'pointer', transition: 'background 0.15s, color 0.15s',
-              }}
-              onMouseEnter={e => { if (!active) { e.currentTarget.style.background = '#f0f2f5'; e.currentTarget.style.color = '#050505' } }}
-              onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#65676b' } }}>
-              {tab.icon}
-            </button>
+            <div className="topnav-category-select" style={{ display: 'none' }}>
+              <button
+                ref={categoryBtnRef}
+                onClick={() => {
+                  if (!showCategoryMenu && categoryBtnRef.current) {
+                    const r = categoryBtnRef.current.getBoundingClientRect()
+                    setCategoryMenuPos({ top: r.bottom + 6, left: r.left + r.width / 2 })
+                  }
+                  setShowCategoryMenu(v => !v)
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  padding: '5px 8px', borderRadius: 8, cursor: 'pointer',
+                  border: `1.5px solid ${showCategoryMenu ? active.activeBorder : '#e2e8f0'}`,
+                  background: showCategoryMenu ? active.activeBg : '#f8fafc',
+                  color: showCategoryMenu ? active.activeColor : '#65676b',
+                }}>
+                {active.icon}
+                <ChevronDown size={12} />
+              </button>
+              {showCategoryMenu && typeof document !== 'undefined' && createPortal(
+                <div ref={categoryMenuRef} style={{
+                  position: 'fixed', top: categoryMenuPos.top, left: categoryMenuPos.left,
+                  transform: 'translateX(-50%)',
+                  background: '#fff', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+                  border: '1px solid #e4e6eb', zIndex: 9999, padding: '4px 0', minWidth: 160,
+                }}>
+                  {CATEGORY_TABS.map(tab => {
+                    const isActive = (categoryFilter ?? 'all') === tab.value
+                    return (
+                      <button key={tab.value}
+                        onClick={() => { onCategoryChange?.(tab.value); setShowCategoryMenu(false) }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                          padding: '9px 14px', border: 'none', background: isActive ? tab.activeBg : 'none',
+                          color: isActive ? tab.activeColor : '#050505', fontSize: 14,
+                          fontWeight: isActive ? 700 : 500, cursor: 'pointer', textAlign: 'left' as const,
+                        }}
+                        onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#f0f2f5' }}
+                        onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'none' }}>
+                        {tab.icon}
+                        {t(tab.labelKey)}
+                      </button>
+                    )
+                  })}
+                </div>,
+                document.body
+              )}
+            </div>
           )
-        })}
+        })()}
       </div>
 
       {/* Right: CivilAxis link + icons + account.
           minWidth reserves the logged-in width up front so the centered category tabs don't
           shift left when the avatar/icons mount after the async auth check (the F5 jump). */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: 290, gap: 4 }}>
-        <a href="/"
+      <div className="topnav-right" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', minWidth: 290, gap: 4 }}>
+        <a href="/" className="topnav-civilbase-link"
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '0 12px', height: 34, borderRadius: 8, textDecoration: 'none',
@@ -362,7 +438,7 @@ export default function TopNavBar({
               avatarUrl={profile?.avatar_url ?? null}
               displayName={displayName}
               profileUsername={profile?.username ?? null}
-              size={28}
+              size={34}
               dark={false}
             />
           </>

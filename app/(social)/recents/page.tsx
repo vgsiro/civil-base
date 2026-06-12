@@ -237,7 +237,7 @@ export default function RecentsPage() {
         {...chat.dropdownHandlers}
       />
 
-      <div style={{ maxWidth: 680, margin: '16px auto', padding: '0 12px' }}>
+      <div className="single-col-page" style={{ maxWidth: 680, margin: '16px auto', padding: '0 12px' }}>
         <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e4e6eb', overflow: 'hidden' }}>
 
           {/* Header */}

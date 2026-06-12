@@ -325,7 +325,9 @@ export function RectSlsPanel({
         <div style={{ fontSize: 10, fontWeight: 700, color: '#334155', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {t('std_ec2rc_cracked_section')}
         </div>
-        <SlsDiagram inp={inp} res={res} t={t} />
+        <div style={{ overflowX: 'auto', width: '100%', display: 'flex', justifyContent: 'center' }}>
+          <SlsDiagram inp={inp} res={res} t={t} />
+        </div>
       </div>
 
       {/* All result cards — centered row, each card fixed ~280px wide */}

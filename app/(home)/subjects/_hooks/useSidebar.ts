@@ -1,13 +1,15 @@
 'use client'
 import { useState, useRef } from 'react'
 
+const isMobileInit = typeof window !== 'undefined' && window.innerWidth <= 768
+
 export function useSidebar() {
   const [subjectWidth, setSubjectWidth] = useState(260)
   const [sectionWidth, setSectionWidth] = useState(240)
-  const [subjectCollapsed, setSubjectCollapsed] = useState(false)
-  const [sectionCollapsed, setSectionCollapsed] = useState(false)
-  const [subjectPinned, setSubjectPinned] = useState(true)
-  const [sectionPinned, setSectionPinned] = useState(true)
+  const [subjectCollapsed, setSubjectCollapsed] = useState(isMobileInit)
+  const [sectionCollapsed, setSectionCollapsed] = useState(isMobileInit)
+  const [subjectPinned, setSubjectPinned] = useState(!isMobileInit)
+  const [sectionPinned, setSectionPinned] = useState(!isMobileInit)
   const resizingSidebar = useRef<{ panel: 'subject' | 'section'; startX: number; startW: number } | null>(null)
 
   const [resizingImg, setResizingImg] = useState<{ el: HTMLImageElement; startX: number; startW: number } | null>(null)

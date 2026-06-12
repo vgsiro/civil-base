@@ -23,6 +23,7 @@ import FriendRequestDropdown from '../../_components/social/messaging/FriendRequ
 import ChatBox from '../../_components/social/messaging/ChatBox'
 import FeedbackModal from '../../_components/social/notifications/FeedbackModal'
 import SignInPromptModal from '../../_components/shared/SignInPromptModal'
+import MobileBottomNav from '../../_components/social/feed/MobileBottomNav'
 
 const AVATAR_COLORS = [
   'linear-gradient(135deg, #3b82f6, #8b5cf6)',
@@ -341,6 +342,7 @@ function FeedPage() {
 
   function handlePostCreated(post: PostWithProfile) {
     setPosts(prev => [post, ...prev])
+    setRankedOrder(prev => [post.id, ...prev])
     setReshareTarget(null)
   }
 
@@ -441,7 +443,7 @@ function FeedPage() {
       />
 
       {/* ═══ 3-COLUMN BODY ═══ */}
-      <div style={{
+      <div className="feed-grid" style={{
         flex: 1, maxWidth: 1280, width: '100%', margin: '0 auto',
         padding: '16px 8px',
         display: 'grid', gridTemplateColumns: '280px 1fr 300px', gap: 16,
@@ -449,7 +451,7 @@ function FeedPage() {
       }}>
 
         {/* ── LEFT SIDEBAR ── */}
-        <div style={{ position: 'sticky', top: 68, display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', maxHeight: 'calc(100vh - 80px)' }}>
+        <div className="feed-left-sidebar" style={{ position: 'sticky', top: 68, display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', maxHeight: 'calc(100vh - 80px)' }}>
 
           {/* User row */}
           {user && (
@@ -510,7 +512,7 @@ function FeedPage() {
         </div>
 
         {/* ── CENTER FEED ── */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 590, width: '100%', justifySelf: 'center' }}>
+        <div className="feed-center" style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 590, width: '100%', justifySelf: 'center' }}>
 
           {/* Compose box */}
           {user ? (
@@ -609,7 +611,7 @@ function FeedPage() {
         </div>
 
         {/* ── RIGHT SIDEBAR ── */}
-        <div style={{ position: 'sticky', top: 68, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="feed-right-sidebar" style={{ position: 'sticky', top: 68, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* People you may know */}
           {suggestions.length > 0 && (
@@ -641,6 +643,7 @@ function FeedPage() {
           </div>
         </div>
       </div>
+      <MobileBottomNav user={user} onSignInPrompt={() => setSignInPromptAction('comment')} />
     </div>
   )
 }
