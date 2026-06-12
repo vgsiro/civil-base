@@ -5,15 +5,21 @@ import { runCalc } from '../../_lib/calc.js'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-// Module-level client used only for public reads (pdf_chunks, formulas, etc.)
-const supabasePublic = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-)
+// Lazily created on first request so env vars are available at runtime
+let supabasePublic = null
+function getPublicClient() {
+  if (!supabasePublic) {
+    supabasePublic = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    )
+  }
+  return supabasePublic
+}
 
 // Per-request client that carries the user's JWT so auth.uid() resolves in RLS
 function makeUserClient(accessToken) {
-  if (!accessToken) return supabasePublic
+  if (!accessToken) return getPublicClient()
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -21,7 +27,11 @@ function makeUserClient(accessToken) {
   )
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+let genAI = null
+function getGenAI() {
+  if (!genAI) genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+  return genAI
+}
 
 // Models in priority order — falls back automatically on 429 rate limit
 const MODELS = [
@@ -268,7 +278,7 @@ ${contextText}`
     let lastError = null
     for (const modelName of MODELS) {
       try {
-        const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemPrompt })
+        const model = getGenAI().getGenerativeModel({ model: modelName, systemInstruction: systemPrompt })
         const chat = model.startChat({ history: chatHistory })
         const result = await chat.sendMessageStream(question)
 
@@ -439,7 +449,7 @@ async function handleStructuralChat({ question, history, sessionId, userId, edit
     let lastError = null
     for (const modelName of MODELS) {
       try {
-        const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemPrompt })
+        const model = getGenAI().getGenerativeModel({ model: modelName, systemInstruction: systemPrompt })
         const chat = model.startChat({ history: chatHistory })
 
         // Build multipart message if images are attached
