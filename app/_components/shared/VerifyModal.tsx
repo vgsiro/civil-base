@@ -254,7 +254,7 @@ interface DocUploadProps {
   setFile: (f: File | null) => void
   docUrl: string
   setDocUrl: (v: string) => void
-  fileRef: React.RefObject<HTMLInputElement>
+  fileRef: React.RefObject<HTMLInputElement | null>
   uploadLabel: string
   orLabel: string
   urlPlaceholder: string
