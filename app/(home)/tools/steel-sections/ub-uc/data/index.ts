@@ -1,5 +1,6 @@
 import { UB_SECTIONS } from '../../data/ub'
 import { UC_SECTIONS } from '../../data/uc'
+import { UBP_SECTIONS } from '../../data/ubp'
 import type { SectionType } from '../../_shared/types'
 
 export const UB_UC_SECTION_TYPES: SectionType[] = [
@@ -18,6 +19,14 @@ export const UB_UC_SECTION_TYPES: SectionType[] = [
     ref: 'BS EN 10365:2017',
     family: 'open',
     rows: UC_SECTIONS,
+  },
+  {
+    id: 'ubp',
+    label: 'Universal Bearing Piles (UBP)',
+    shortLabel: 'UBP',
+    ref: 'BS EN 10365:2017',
+    family: 'open',
+    rows: UBP_SECTIONS,
   },
 ]
 

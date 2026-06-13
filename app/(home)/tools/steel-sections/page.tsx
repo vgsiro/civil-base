@@ -1,5 +1,5 @@
 'use client'
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 import HomeNavBar from '../../../_components/shared/HomeNavBar'
 import SteelSections from './SteelSections'
 import { recordRecent } from '../../../_hooks/useRecents'
@@ -49,7 +49,9 @@ export default function SteelSectionsPage() {
       </div>
 
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', minHeight: 0 }}>
-        <SteelSections />
+        <Suspense fallback={null}>
+          <SteelSections />
+        </Suspense>
       </div>
     </div>
   )

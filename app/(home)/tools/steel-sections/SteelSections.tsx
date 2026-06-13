@@ -1,5 +1,6 @@
 'use client'
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Copy, Check, ChevronDown, ChevronRight } from 'lucide-react'
 import PageDiscussion from '../../../_components/home/discussion/PageDiscussion'
 import { Tooltip } from '../../standards/_lib/ui'
@@ -7,10 +8,12 @@ import { useTranslation } from '../../../i18n/LanguageContext'
 import { UB_UC_SECTION_TYPES } from './ub-uc/data/index'
 import { HOLLOW_SECTION_TYPES } from './hollow/data/index'
 import { COLD_FORMED_SECTION_TYPES } from './cold-formed/data/index'
+import { PFC_SECTION_TYPES } from './pfc/data/index'
+import { ANGLE_SECTION_TYPES } from './angle/data/index'
 import type { SectionFamily } from './_shared/types'
 
-const ALL_SECTION_TYPES = [...UB_UC_SECTION_TYPES, ...HOLLOW_SECTION_TYPES, ...COLD_FORMED_SECTION_TYPES]
-import { VISIBLE_COLS, COLUMN_GROUPS, COLUMN_UNITS, COL_LABEL, COL_TIP_KEY, COL_TIP_SYMBOL } from './_shared/column-meta'
+const ALL_SECTION_TYPES = [...UB_UC_SECTION_TYPES, ...HOLLOW_SECTION_TYPES, ...COLD_FORMED_SECTION_TYPES, ...PFC_SECTION_TYPES, ...ANGLE_SECTION_TYPES]
+import { VISIBLE_COLS, COLUMN_GROUPS, COLUMN_UNITS, COL_LABEL, COL_TIP_KEY, COL_TIP_SYMBOL, TABLE_HEADER_GROUPS } from './_shared/column-meta'
 import type { SectionRow } from './_shared/types'
 import type { SectionType } from './_shared/types'
 import UbUcCapacityPanel from './ub-uc/CapacityPanel'
@@ -19,7 +22,6 @@ import ColdFormedCapacityPanel from './cold-formed/CapacityPanel'
 import { useCurrentUser, useToolAccess } from '@/lib/useSubscription'
 
 const ACCENT = '#0369a1'
-const STORAGE_KEY = 'bb_active_section'
 
 type TFn = (k: Parameters<ReturnType<typeof useTranslation>['t']>[0]) => string
 
@@ -211,52 +213,121 @@ function SectionTable({
         </div>
       </div>
 
-      {/* Search */}
-      <div style={{ padding: '10px 20px', borderBottom: '1px solid #f1f5f9', flexShrink: 0 }}>
-        <input
-          type="text"
-          value={q}
-          onChange={e => { setQ(e.target.value); setExpanded(null) }}
-          placeholder={t('bb_search_label')}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            border: '1.5px solid #e2e8f0',
-            borderRadius: 8,
-            fontSize: 13,
-            color: '#1e293b',
-            background: '#fff',
-            outline: 'none',
-            boxSizing: 'border-box',
-          }}
-          onFocus={e => (e.currentTarget.style.borderColor = ACCENT)}
-          onBlur={e => (e.currentTarget.style.borderColor = '#e2e8f0')}
-        />
-      </div>
-
-      {/* Table */}
+      {/* Table + search — centred, auto-width, scroll wrapper */}
       <div className="bb-table-wrap" style={{ flex: 1, overflowY: 'auto', overflowX: 'auto' }}>
+        {/* inner wrapper centres the block and stretches search to match table width */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 20px 0', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', width: 'fit-content' }}>
+            <input
+              type="text"
+              value={q}
+              onChange={e => { setQ(e.target.value); setExpanded(null) }}
+              placeholder={t('bb_search_label')}
+              style={{
+                width: '100%',
+                minWidth: 300,
+                padding: '8px 12px',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: 8,
+                fontSize: 13,
+                color: '#1e293b',
+                background: '#fff',
+                outline: 'none',
+                boxSizing: 'border-box',
+                marginBottom: 10,
+              }}
+              onFocus={e => (e.currentTarget.style.borderColor = ACCENT)}
+              onBlur={e => (e.currentTarget.style.borderColor = '#e2e8f0')}
+            />
+
         {filtered.length === 0 ? (
           <div style={{ padding: 40, textAlign: 'center', color: '#94a3b8', fontSize: 14 }}>
             {t('bb_no_results')}
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-            <thead>
-              <tr style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 1 }}>
-                <th style={thStyle}></th>
-                <th style={{ ...thStyle, textAlign: 'left', minWidth: 140 }}>Designation</th>
-                {(sectionType.visibleCols ?? VISIBLE_COLS).map(col => (
-                  <th key={col} style={thStyle}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
-                      <span>{COL_LABEL[col] ?? col}</span>
-                      {COL_TIPS[col] && <Tooltip text={COL_TIPS[col]!} />}
-                    </div>
-                    <div style={{ fontSize: 10, fontWeight: 400, color: '#94a3b8' }}>{COLUMN_UNITS[col]}</div>
-                  </th>
-                ))}
-                <th style={thStyle}></th>
-              </tr>
+          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, overflow: 'hidden' }}>
+          <table style={{ width: 'auto', borderCollapse: 'collapse', fontSize: 12 }}>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
+              {(() => {
+                const visCols = sectionType.visibleCols ?? VISIBLE_COLS
+                // Build active groups: only groups that have ≥1 col in visCols
+                const activeGroups = TABLE_HEADER_GROUPS
+                  .map(g => ({ ...g, activeCols: g.cols.filter(c => visCols.includes(c)) }))
+                  .filter(g => g.activeCols.length > 0)
+
+                const thBase: React.CSSProperties = {
+                  ...thStyle,
+                  background: '#0c4a6e',
+                  borderRight: '1px solid #0e5a85',
+                  borderBottom: '1px solid #0e5a85',
+                }
+                const thG: React.CSSProperties = {
+                  ...thBase,
+                  color: '#ffffff',
+                  fontWeight: 800,
+                  fontSize: 11,
+                  whiteSpace: 'pre-line',
+                  textAlign: 'center',
+                  lineHeight: 1.35,
+                  padding: '8px 10px',
+                }
+                const thS: React.CSSProperties = {
+                  ...thBase,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: '#cbd5e1',
+                  padding: '5px 10px',
+                }
+                const thU: React.CSSProperties = {
+                  ...thBase,
+                  fontSize: 10,
+                  fontWeight: 400,
+                  color: '#94a3b8',
+                  borderBottom: '2px solid #4a6fa5',
+                  padding: '3px 10px',
+                }
+
+                return (
+                  <>
+                    {/* Row 1 — group titles */}
+                    <tr>
+                      <th style={{ ...thG, borderRight: 'none' }} rowSpan={3}></th>
+                      <th style={{ ...thG, textAlign: 'left', minWidth: 120 }} rowSpan={3}>
+                        Section{'\n'}Designation
+                      </th>
+                      {activeGroups.map(g => (
+                        <th key={g.title} colSpan={g.activeCols.length} style={thG}>
+                          {g.title}
+                        </th>
+                      ))}
+                      <th style={{ ...thG, borderRight: 'none' }} rowSpan={3}></th>
+                    </tr>
+                    {/* Row 2 — symbols */}
+                    <tr>
+                      {activeGroups.map(g =>
+                        g.activeCols.map(col => (
+                          <th key={col} style={thS}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
+                              {COL_LABEL[col] ?? col}
+                              {COL_TIPS[col] && <Tooltip text={COL_TIPS[col]!} />}
+                            </div>
+                          </th>
+                        ))
+                      )}
+                    </tr>
+                    {/* Row 3 — units */}
+                    <tr>
+                      {activeGroups.map(g =>
+                        g.activeCols.map(col => (
+                          <th key={col} style={thU}>
+                            {COLUMN_UNITS[col] ?? ''}
+                          </th>
+                        ))
+                      )}
+                    </tr>
+                  </>
+                )
+              })()}
             </thead>
             <tbody>
               {filtered.map((row, i) => {
@@ -280,18 +351,18 @@ function SectionTable({
                       onMouseEnter={e => { if (!isExpanded && !isSelected) (e.currentTarget as HTMLTableRowElement).style.background = '#f0f9ff' }}
                       onMouseLeave={e => { if (!isExpanded && !isSelected) (e.currentTarget as HTMLTableRowElement).style.background = i % 2 === 0 ? '#fff' : '#f8fafc' }}
                     >
-                      <td style={{ ...tdStyle, width: 24, paddingRight: 0, color: '#94a3b8' }}>
+                      <td style={{ ...tdStyle, width: 20, paddingRight: 0, color: '#94a3b8', borderRight: 'none' }}>
                         {isExpanded ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
                       </td>
                       <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 600, color: '#1e293b', whiteSpace: 'nowrap' }}>
                         {row.designation}
                       </td>
                       {(sectionType.visibleCols ?? VISIBLE_COLS).map(col => (
-                        <td key={col} style={{ ...tdStyle, fontFamily: 'monospace', color: '#334155' }}>
+                        <td key={col} style={{ ...tdStyle, fontFamily: 'monospace' }}>
                           {fmt(row[col] as number, col)}
                         </td>
                       ))}
-                      <td style={{ ...tdStyle, padding: '0 8px' }} onClick={e => e.stopPropagation()}>
+                      <td style={{ ...tdStyle, padding: '0 6px', borderRight: 'none' }} onClick={e => e.stopPropagation()}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                           <CopyButton text={row.designation} />
                           <button
@@ -321,7 +392,10 @@ function SectionTable({
               })}
             </tbody>
           </table>
+          </div>
         )}
+          </div>
+        </div>
 
         {/* Discussion */}
         <div style={{ padding: '0 20px 40px', marginTop: 8 }}>
@@ -333,44 +407,78 @@ function SectionTable({
 }
 
 const thStyle: React.CSSProperties = {
-  padding: '8px 10px',
+  padding: '7px 10px',
   textAlign: 'center',
   fontWeight: 700,
   fontSize: 11,
-  color: '#475569',
-  borderBottom: '2px solid #e2e8f0',
+  borderRight: '1px solid #e2e8f0',
   whiteSpace: 'nowrap',
 }
 
 const tdStyle: React.CSSProperties = {
-  padding: '7px 10px',
+  padding: '6px 10px',
   textAlign: 'center',
   borderBottom: '1px solid #f1f5f9',
+  borderRight: '1px solid #f1f5f9',
+  color: '#1e293b',
 }
 
 export default function SteelSections() {
   const { t } = useTranslation()
-  const [activeId, setActiveId] = useState(() => {
-    if (typeof window === 'undefined') return ALL_SECTION_TYPES[0].id
-    const saved = localStorage.getItem(STORAGE_KEY)
-    return saved && ALL_SECTION_TYPES.find(s => s.id === saved) ? saved : ALL_SECTION_TYPES[0].id
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Read initial state from URL params
+  const [activeId, setActiveId] = useState<string>(() => {
+    const p = searchParams.get('s')
+    return p && ALL_SECTION_TYPES.find(st => st.id === p) ? p : ALL_SECTION_TYPES[0].id
   })
-  const [activeTab, setActiveTab] = useState<MainTab>('properties')
-  const [selectedRow, setSelectedRow] = useState<SectionRow | null>(null)
+  const [activeTab, setActiveTabState] = useState<MainTab>(() => {
+    const p = searchParams.get('tab')
+    return p === 'capacity' ? 'capacity' : 'properties'
+  })
+  const [selectedRow, setSelectedRow] = useState<SectionRow | null>(() => {
+    const sid = searchParams.get('s')
+    const rdes = searchParams.get('row')
+    if (!sid || !rdes) return null
+    const st = ALL_SECTION_TYPES.find(x => x.id === sid)
+    return st?.rows.find(r => r.designation === rdes) ?? null
+  })
 
   const { userId, userEmail } = useCurrentUser()
   const toolAccess = useToolAccess('steel_sections', userId, userEmail)
 
   const sectionType = ALL_SECTION_TYPES.find(s => s.id === activeId)!
 
-  function handleTypeChange(id: string) {
+  // Write state to URL on every change — replace (no history spam), debounced
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      const p = new URLSearchParams(searchParams.toString())
+      p.set('s', activeId)
+      p.set('tab', activeTab)
+      if (selectedRow) p.set('row', selectedRow.designation)
+      else p.delete('row')
+      router.replace(`?${p.toString()}`)
+    }, 300)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeId, activeTab, selectedRow])
+
+  const handleTypeChange = useCallback((id: string) => {
     setActiveId(id)
-    localStorage.setItem(STORAGE_KEY, id)
-  }
+    setActiveTabState('properties')
+    setSelectedRow(null)
+  }, [])
+
+  const setActiveTab = useCallback((tab: MainTab) => {
+    setActiveTabState(tab)
+  }, [])
 
   function handleSelectRow(row: SectionRow) {
     setSelectedRow(row)
-    setActiveTab('capacity')
+    setActiveTabState('capacity')
   }
 
   return (
@@ -439,8 +547,10 @@ export default function SteelSections() {
           <UbUcCapacityPanel row={selectedRow} toolAccess={toolAccess} />
         ) : sectionType.family === 'cold-formed' ? (
           <ColdFormedCapacityPanel row={selectedRow} toolAccess={toolAccess} />
-        ) : (
+        ) : sectionType.family === 'hollow' ? (
           <HollowCapacityPanel row={selectedRow} toolAccess={toolAccess} />
+        ) : (
+          <UbUcCapacityPanel row={selectedRow} toolAccess={toolAccess} />
         )}
       </div>
       </div>

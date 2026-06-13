@@ -247,7 +247,103 @@ const [exportOpen, setExportOpen] = useState(false)
 
 ---
 
-## 10. Mobile Responsiveness
+## 10. URL State — Shareable Links & F5 Restore
+
+Every tool that has meaningful UI state (selected section, active tab, inputs) **must encode that state into the URL** so the link is shareable and F5 restores the exact view.
+
+### Rules
+
+- **Read** state from URL params on `useState` initialiser (runs once, SSR-safe).
+- **Write** state back with `router.replace()` — not `router.push()` — so the browser back button is not polluted with every selection change.
+- **Debounce** the write by 300–500 ms to avoid a `replace` on every keystroke.
+- **Wrap** any component that calls `useSearchParams()` in a `<Suspense fallback={null}>` in its `page.tsx` — required by Next.js App Router.
+- **Preserve** existing params when writing: always start from `new URLSearchParams(searchParams.toString())`.
+
+### Two patterns
+
+#### A — Plain string params (section selectors, tab toggles, designations)
+
+Use when state is a short, human-readable string. No encoding needed.
+
+```tsx
+// page.tsx
+import { Suspense } from 'react'
+<Suspense fallback={null}><MyTool /></Suspense>
+
+// MyTool.tsx
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useRef } from 'react'
+
+const router = useRouter()
+const searchParams = useSearchParams()
+const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+// Read on init
+const [activeId, setActiveId] = useState(() => {
+  const p = searchParams.get('s')
+  return p && ALL_TYPES.find(t => t.id === p) ? p : ALL_TYPES[0].id
+})
+
+// Write on change — replace, debounced
+useEffect(() => {
+  if (debounceRef.current) clearTimeout(debounceRef.current)
+  debounceRef.current = setTimeout(() => {
+    const p = new URLSearchParams(searchParams.toString())
+    p.set('s', activeId)
+    router.replace(`?${p.toString()}`)
+  }, 300)
+  return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [activeId])
+```
+
+#### B — Base64-encoded JSON (complex numeric inputs)
+
+Use when state is a rich object (inputs, rebar rows, material choices).  
+See `app/(home)/standards/_ec/ec2/tools/rect-section-check/rect-url-state.ts` for the reference implementation.
+
+```ts
+// <tool>-url-state.ts
+export function encodeState(state: MyState): string { return btoa(JSON.stringify(state)) }
+export function decodeState(raw: string): MyState | null {
+  try { return JSON.parse(atob(raw)) as MyState } catch { return null }
+}
+
+// In component:
+const [inp, setInp] = useState<MyInput>(() => {
+  const raw = searchParams.get('s')
+  if (raw) { const d = decodeState(raw); if (d) return d }
+  return DEFAULT
+})
+
+useEffect(() => {
+  if (debounceRef.current) clearTimeout(debounceRef.current)
+  debounceRef.current = setTimeout(() => {
+    const p = new URLSearchParams(searchParams.toString())
+    p.set('s', encodeState(inp))
+    router.replace(`?${p.toString()}`)
+  }, 500)
+  return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [inp])
+```
+
+### Param naming
+
+| What | Param name | Example value |
+|---|---|---|
+| Active section / variant id | `s` | `ub`, `pfc`, `ea-btb` |
+| Active tab | `tab` | `properties`, `capacity` |
+| Selected row designation | `row` | `UB 406×178×67` |
+| Full encoded input blob | `s` | `eyJpbnAiOi...` (base64) |
+| Active sub-tab | `<tool>Tab` | `rectTab=sls` |
+
+Use short, lowercase, hyphen-separated names. Never encode secrets or PII in URLs.
+
+---
+
+## 11. Mobile Responsiveness
+
 
 Tools with a sidebar + main panel layout must use a **column-then-row** flex structure so a mobile dropdown selector can sit above the row:
 
@@ -283,7 +379,7 @@ Top bars with multiple controls should use `flexWrap: 'wrap'` so buttons wrap gr
 
 ---
 
-## 11. Tier Gating
+## 12. Tier Gating
 
 Tools gate features via `useToolAccess` from `lib/useSubscription.ts`. The tier configuration lives in the `tool_access` DB table (per `tool_id`).
 
@@ -344,6 +440,7 @@ export default function CapacityPanel({ ..., toolAccess = DEFAULT_ACCESS }) {
 ---
 
 ## 13. i18n Hook Usage
+
 
 ```tsx
 // In every component that renders user-facing text:

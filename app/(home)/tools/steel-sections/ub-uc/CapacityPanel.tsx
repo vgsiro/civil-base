@@ -636,6 +636,77 @@ export function CompressionSection({ row, grade, nbRd, cs, showDetails, selLcomp
 
 // ── Main CapacityPanel ────────────────────────────────────────────────────────
 
+// ── Pass/Fail badge ───────────────────────────────────────────────────────────
+
+function PassFail({ ed, rd }: { ed: number; rd: number }) {
+  const ratio = ed / rd
+  const pass = ratio <= 1.0
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      fontSize: 10, fontWeight: 800, padding: '1px 7px', borderRadius: 10,
+      background: pass ? '#dcfce7' : '#fee2e2',
+      color: pass ? '#15803d' : '#b91c1c',
+      marginLeft: 6,
+    }}>
+      {pass ? '✓ PASS' : '✗ FAIL'}
+      <span style={{ fontWeight: 400, opacity: 0.8 }}>{(ratio * 100).toFixed(0)}%</span>
+    </span>
+  )
+}
+
+// ── Design forces input panel ─────────────────────────────────────────────────
+
+function DesignForcesPanel({
+  MEd, NEd, VEd,
+  onMEd, onNEd, onVEd,
+}: {
+  MEd: string; NEd: string; VEd: string
+  onMEd: (v: string) => void; onNEd: (v: string) => void; onVEd: (v: string) => void
+}) {
+  const inpStyle: React.CSSProperties = {
+    width: 90, padding: '5px 8px', fontSize: 12, borderRadius: 6,
+    border: '1.5px solid #e2e8f0', outline: 'none', textAlign: 'right',
+    fontFamily: 'monospace', background: '#fff', color: '#1e293b',
+    boxSizing: 'border-box',
+  }
+  const focus = (e: React.FocusEvent<HTMLInputElement>) => (e.currentTarget.style.borderColor = ACCENT)
+  const blur  = (e: React.FocusEvent<HTMLInputElement>) => (e.currentTarget.style.borderColor = '#e2e8f0')
+
+  return (
+    <div style={{ marginBottom: 20, padding: '12px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        Design Forces (optional — leave blank to skip checks)
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 20px', alignItems: 'center' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#334155' }}>
+          <Tex>{'M_{Ed}'}</Tex>
+          <input style={inpStyle} type="number" min="0" step="1" placeholder="—"
+            value={MEd} onChange={e => onMEd(e.target.value)}
+            onFocus={focus} onBlur={blur} />
+          <span style={{ fontSize: 11, color: '#64748b' }}>kNm</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#334155' }}>
+          <Tex>{'N_{Ed}'}</Tex>
+          <input style={inpStyle} type="number" min="0" step="1" placeholder="—"
+            value={NEd} onChange={e => onNEd(e.target.value)}
+            onFocus={focus} onBlur={blur} />
+          <span style={{ fontSize: 11, color: '#64748b' }}>kN</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#334155' }}>
+          <Tex>{'V_{Ed}'}</Tex>
+          <input style={inpStyle} type="number" min="0" step="1" placeholder="—"
+            value={VEd} onChange={e => onVEd(e.target.value)}
+            onFocus={focus} onBlur={blur} />
+          <span style={{ fontSize: 11, color: '#64748b' }}>kN</span>
+        </label>
+      </div>
+    </div>
+  )
+}
+
+// ── Main CapacityPanel ────────────────────────────────────────────────────────
+
 export default function CapacityPanel({ row: propRow, toolAccess = DEFAULT_ACCESS }: { row: SectionRow | null; toolAccess?: ToolAccess }) {
   const { t } = useTranslation()
   const [grade, setGrade] = useState<SteelGrade>('S275')
@@ -646,6 +717,9 @@ export default function CapacityPanel({ row: propRow, toolAccess = DEFAULT_ACCES
   const [selN, setSelN] = useState(0.5)
   const [selLcomp, setSelLcomp] = useState(6)
   const [exportOpen, setExportOpen] = useState(false)
+  const [MEd, setMEd] = useState('')
+  const [NEd, setNEd] = useState('')
+  const [VEd, setVEd] = useState('')
 
   const row = localRow ?? propRow
 
@@ -669,6 +743,11 @@ export default function CapacityPanel({ row: propRow, toolAccess = DEFAULT_ACCES
   }
 
   const { cs, mbRd, mNRd, nbRd } = result!
+
+  // Parse optional design forces
+  const medV = MEd !== '' ? parseFloat(MEd) : null
+  const nedV = NEd !== '' ? parseFloat(NEd) : null
+  const vedV = VEd !== '' ? parseFloat(VEd) : null
 
   return (
     <>
@@ -697,6 +776,13 @@ export default function CapacityPanel({ row: propRow, toolAccess = DEFAULT_ACCES
           </div>
         )}
 
+        {cs.cls < 4 && (
+          <DesignForcesPanel
+            MEd={MEd} NEd={NEd} VEd={VEd}
+            onMEd={setMEd} onNEd={setNEd} onVEd={setVEd}
+          />
+        )}
+
         {cs.cls < 4 && tab === 'results' && (
           <>
             {/* Cross-section summary */}
@@ -706,10 +792,19 @@ export default function CapacityPanel({ row: propRow, toolAccess = DEFAULT_ACCES
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('bbuc_cs_title')}</span>
                 <span style={{ fontSize: 10, color: '#94a3b8', marginLeft: 4 }}>{t('bbuc_cs_ref')}</span>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 32px', padding: '12px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, fontSize: 12, alignItems: 'baseline' }}>
-                <span><Tex>{'M_{c,Rd}'}</Tex> = <strong>{r0(cs.Mc_Rd)} kNm</strong></span>
-                <span><Tex>{'N_{pl,Rd}'}</Tex> = <strong>{r0(cs.Npl_Rd)} kN</strong></span>
-                <span><Tex>{'V_{pl,Rd}'}</Tex> = <strong>{r0(cs.Vpl_Rd)} kN</strong></span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px 32px', padding: '12px 16px', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, fontSize: 12, alignItems: 'center' }}>
+                <span>
+                  <Tex>{'M_{c,Rd}'}</Tex> = <strong>{r0(cs.Mc_Rd)} kNm</strong>
+                  {medV !== null && isFinite(medV) && <PassFail ed={medV} rd={cs.Mc_Rd} />}
+                </span>
+                <span>
+                  <Tex>{'N_{pl,Rd}'}</Tex> = <strong>{r0(cs.Npl_Rd)} kN</strong>
+                  {nedV !== null && isFinite(nedV) && <PassFail ed={nedV} rd={cs.Npl_Rd} />}
+                </span>
+                <span>
+                  <Tex>{'V_{pl,Rd}'}</Tex> = <strong>{r0(cs.Vpl_Rd)} kN</strong>
+                  {vedV !== null && isFinite(vedV) && <PassFail ed={vedV} rd={cs.Vpl_Rd} />}
+                </span>
                 <span>{t('bbuc_header_class')} <strong>{cs.cls}</strong></span>
               </div>
             </div>
@@ -722,6 +817,31 @@ export default function CapacityPanel({ row: propRow, toolAccess = DEFAULT_ACCES
         {cs.cls < 4 && tab === 'details' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <CrossSectionDetails row={row} grade={grade} cs={cs} />
+
+            {/* Utilisation check in details if forces entered */}
+            {(medV !== null || nedV !== null || vedV !== null) && (
+              <DetailGroup title="Utilisation Check">
+                {medV !== null && isFinite(medV) && (
+                  <CalcStep
+                    label={<><Tex>{'M_{Ed} / M_{c,Rd}'}</Tex></>}
+                    formula={`\\dfrac{M_{Ed}}{M_{c,Rd}} = \\dfrac{${medV}}{${r0(cs.Mc_Rd)}} = ${(medV / cs.Mc_Rd).toFixed(3)} ${medV / cs.Mc_Rd <= 1 ? '\\le 1.0 \\quad \\checkmark\\ \\textbf{PASS}' : '> 1.0 \\quad \\times\\ \\textbf{FAIL}'}`}
+                  />
+                )}
+                {nedV !== null && isFinite(nedV) && (
+                  <CalcStep
+                    label={<><Tex>{'N_{Ed} / N_{pl,Rd}'}</Tex></>}
+                    formula={`\\dfrac{N_{Ed}}{N_{pl,Rd}} = \\dfrac{${nedV}}{${r0(cs.Npl_Rd)}} = ${(nedV / cs.Npl_Rd).toFixed(3)} ${nedV / cs.Npl_Rd <= 1 ? '\\le 1.0 \\quad \\checkmark\\ \\textbf{PASS}' : '> 1.0 \\quad \\times\\ \\textbf{FAIL}'}`}
+                  />
+                )}
+                {vedV !== null && isFinite(vedV) && (
+                  <CalcStep
+                    label={<><Tex>{'V_{Ed} / V_{pl,Rd}'}</Tex></>}
+                    formula={`\\dfrac{V_{Ed}}{V_{pl,Rd}} = \\dfrac{${vedV}}{${r0(cs.Vpl_Rd)}} = ${(vedV / cs.Vpl_Rd).toFixed(3)} ${vedV / cs.Vpl_Rd <= 1 ? '\\le 1.0 \\quad \\checkmark\\ \\textbf{PASS}' : '> 1.0 \\quad \\times\\ \\textbf{FAIL}'}`}
+                  />
+                )}
+              </DetailGroup>
+            )}
+
             <BendingSection      row={row} grade={grade} mbRd={mbRd} cs={cs} showDetails selC1={selC1} selL={selL} onSelC1={setSelC1} onSelL={setSelL} />
             <AxialBendingSection row={row} grade={grade} mNRd={mNRd} cs={cs} showDetails selN={selN} onSelN={setSelN} />
             <CompressionSection  row={row} grade={grade} nbRd={nbRd} cs={cs} showDetails selLcomp={selLcomp} onSelLcomp={setSelLcomp} />

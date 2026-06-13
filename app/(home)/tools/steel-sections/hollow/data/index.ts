@@ -1,6 +1,7 @@
 import { SHS_SECTIONS } from '../../data/shs'
 import { RHS_SECTIONS } from '../../data/rhs'
 import { CHS_SECTIONS } from '../../data/chs'
+import { EHS_SECTIONS } from '../../data/ehs'
 import type { SectionType } from '../../_shared/types'
 import {
   HOLLOW_VISIBLE_COLS, HOLLOW_COLUMN_GROUPS,
@@ -37,6 +38,16 @@ export const HOLLOW_SECTION_TYPES: SectionType[] = [
     rows: CHS_SECTIONS,
     visibleCols:  CHS_VISIBLE_COLS,
     columnGroups: CHS_COLUMN_GROUPS,
+  },
+  {
+    id: 'ehs',
+    label: 'Elliptical Hollow Sections — Hot-finished (BS EN 10210)',
+    shortLabel: 'EHS Hot-finished',
+    ref: 'BS EN 10210-2:2006',
+    family: 'hollow',
+    rows: EHS_SECTIONS,
+    visibleCols:  HOLLOW_VISIBLE_COLS,
+    columnGroups: HOLLOW_COLUMN_GROUPS,
   },
 ]
 

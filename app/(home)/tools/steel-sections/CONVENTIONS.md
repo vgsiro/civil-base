@@ -311,6 +311,24 @@ The tool uses a **column-then-row** layout pattern so the mobile dropdown sits a
 
 ---
 
+## URL State
+
+The Steel Sections tool uses **plain string URL params** (Pattern A from `TOOL_CONVENTIONS.md §10`).
+
+| Param | Meaning | Example |
+|---|---|---|
+| `s` | Active section type id | `ub`, `pfc`, `ea-btb`, `shs` |
+| `tab` | Active main tab | `properties`, `capacity` |
+| `row` | Selected row designation (for Capacity tab) | `UB 406×178×67` |
+
+**All three params are written together** in a single debounced `router.replace()` in `SteelSections.tsx` whenever `activeId`, `activeTab`, or `selectedRow` changes.
+
+**Restoring on load:** each `useState` initialiser reads its param from `useSearchParams()` — section type and tab restore immediately; selected row is looked up by designation string in the matched section's `rows` array.
+
+**`page.tsx` must wrap `<SteelSections />` in `<Suspense fallback={null}>`** — required by Next.js App Router whenever `useSearchParams()` is called inside a component.
+
+---
+
 ## Checks Before Finishing
 
 ```bash
