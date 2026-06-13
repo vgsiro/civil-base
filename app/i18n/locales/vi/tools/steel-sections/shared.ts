@@ -37,6 +37,16 @@ const ssShard = {
   bb_tip_J:    'Hằng số xoắn — xoắn tự do St. Venant',
   bb_tip_Cw:   'Hằng số vênh — dùng trong tính toán mất ổn định ngang',
 
+  // Tiêu đề nhóm bổ sung (rỗng / CHS)
+  bb_grp_section_props: 'Đặc trưng tiết diện',
+  bb_grp_surface:       'Diện tích bề mặt',
+
+  // Tooltip cột bổ sung (rỗng / CHS)
+  bb_tip_t:             'Bề dày thành',
+  bb_tip_Wt:            'Mô men kháng xoắn',
+  bb_tip_surfacePerM:   'Diện tích bề mặt trên mét dài',
+  bb_tip_surfacePerTonne: 'Diện tích bề mặt trên tấn',
+
   // Phân quyền theo gói
   bb_upgrade_details:  'Nâng cấp lên Pro để xem chi tiết tính toán',
   bb_export_premium:   'Premium — nâng cấp để xuất báo cáo',

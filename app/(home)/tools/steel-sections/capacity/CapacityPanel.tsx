@@ -12,7 +12,8 @@ import {
   type MNrdRow,
   type NbRdRow,
 } from './ec3-capacity'
-import { ALL_SECTION_TYPES, type SectionRow } from '../data/index'
+import type { SectionRow } from '../_shared/types'
+import { UB_UC_SECTION_TYPES as ALL_SECTION_TYPES } from '../ub-uc/data/index'
 import {
   ResultsDetailsProvider,
   ResultsDetailsTabBar,

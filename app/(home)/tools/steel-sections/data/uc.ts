@@ -1,4 +1,4 @@
-import type { SectionRow } from './index'
+import type { SectionRow } from '../_shared/types'
 
 export const UC_SECTIONS: SectionRow[] = [
   // 152×152 series

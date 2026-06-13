@@ -12,6 +12,8 @@ import ec1wind from './tools/ec1-wind'
 import ec3bolt from './tools/ec3-bolt'
 import ssShard from './tools/steel-sections/shared'
 import ssUbUc from './tools/steel-sections/ub-uc'
+import ssHollow from './tools/steel-sections/hollow'
+import ssColdFormed from './tools/steel-sections/cold-formed'
 
 const vi = {
   ...common,
@@ -27,6 +29,8 @@ const vi = {
   ...ec3bolt,
   ...ssShard,
   ...ssUbUc,
+  ...ssHollow,
+  ...ssColdFormed,
 }
 
 export default vi

@@ -32,7 +32,7 @@ const ssUbUc = {
   // Nén
   bbuc_comp_title:            'Nén — Sức kháng oằn',
   bbuc_comp_ref:              '§6.3.1',
-  bbuc_comp_axis_col:         'Trục',
+  bbuc_comp_axis_col:         'Chiều dài (m)',
   bbuc_comp_footer:           'Chiều dài oằn (m)',
 
   // Modal xuất file

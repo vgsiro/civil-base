@@ -37,6 +37,16 @@ const ssShard = {
   bb_tip_J:    'Torsion constant — St Venant torsion',
   bb_tip_Cw:   'Warping constant — used in LTB calculations',
 
+  // Extra group headings (hollow / CHS)
+  bb_grp_section_props: 'Section Properties',
+  bb_grp_surface:       'Surface Area',
+
+  // Extra column tooltips (hollow / CHS)
+  bb_tip_t:             'Wall thickness',
+  bb_tip_Wt:            'Torsion section modulus',
+  bb_tip_surfacePerM:   'Surface area per metre length',
+  bb_tip_surfacePerTonne: 'Surface area per tonne',
+
   // Tier gating
   bb_upgrade_details:  'Upgrade to Pro to view calculation details',
   bb_export_premium:   'Premium — upgrade to export',

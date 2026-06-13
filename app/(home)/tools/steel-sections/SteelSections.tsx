@@ -4,11 +4,18 @@ import { Copy, Check, ChevronDown, ChevronRight } from 'lucide-react'
 import PageDiscussion from '../../../_components/home/discussion/PageDiscussion'
 import { Tooltip } from '../../standards/_lib/ui'
 import { useTranslation } from '../../../i18n/LanguageContext'
-import { UB_UC_SECTION_TYPES as ALL_SECTION_TYPES } from './ub-uc/data/index'
+import { UB_UC_SECTION_TYPES } from './ub-uc/data/index'
+import { HOLLOW_SECTION_TYPES } from './hollow/data/index'
+import { COLD_FORMED_SECTION_TYPES } from './cold-formed/data/index'
+import type { SectionFamily } from './_shared/types'
+
+const ALL_SECTION_TYPES = [...UB_UC_SECTION_TYPES, ...HOLLOW_SECTION_TYPES, ...COLD_FORMED_SECTION_TYPES]
 import { VISIBLE_COLS, COLUMN_GROUPS, COLUMN_UNITS, COL_LABEL, COL_TIP_KEY, COL_TIP_SYMBOL } from './_shared/column-meta'
 import type { SectionRow } from './_shared/types'
 import type { SectionType } from './_shared/types'
-import CapacityPanel from './ub-uc/CapacityPanel'
+import UbUcCapacityPanel from './ub-uc/CapacityPanel'
+import HollowCapacityPanel from './hollow/CapacityPanel'
+import ColdFormedCapacityPanel from './cold-formed/CapacityPanel'
 import { useCurrentUser, useToolAccess } from '@/lib/useSubscription'
 
 const ACCENT = '#0369a1'
@@ -125,14 +132,15 @@ function CopyButton({ text }: { text: string }) {
   )
 }
 
-function DetailCard({ row }: { row: SectionRow }) {
+function DetailCard({ row, stdRef, columnGroups: colGrps }: { row: SectionRow; stdRef?: string; columnGroups?: { labelKey: string; cols: (keyof SectionRow)[] }[] }) {
   const { t } = useTranslation()
   const COL_TIPS = makeColTips(t)
+  const groups = colGrps ?? COLUMN_GROUPS
   return (
     <tr>
       <td colSpan={100} style={{ padding: 0, background: '#f0f9ff', borderBottom: '1px solid #bae6fd' }}>
         <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '10px 20px' }}>
-          {COLUMN_GROUPS.map(grp => (
+          {groups.map(grp => (
             <div key={grp.labelKey}>
               <div style={{ fontSize: 10, fontWeight: 700, color: ACCENT, letterSpacing: '0.06em', marginBottom: 4 }}>
                 {t(grp.labelKey as Parameters<ReturnType<typeof useTranslation>['t']>[0]).toUpperCase()}
@@ -152,9 +160,11 @@ function DetailCard({ row }: { row: SectionRow }) {
             </div>
           ))}
         </div>
-        <div style={{ padding: '6px 20px 10px', fontSize: 11, color: '#94a3b8' }}>
-          {t('bb_ref_label')}: BS EN 10365:2017
-        </div>
+        {stdRef && (
+          <div style={{ padding: '6px 20px 10px', fontSize: 11, color: '#94a3b8' }}>
+            {t('bb_ref_label')}: {stdRef}
+          </div>
+        )}
       </td>
     </tr>
   )
@@ -236,7 +246,7 @@ function SectionTable({
               <tr style={{ background: '#f8fafc', position: 'sticky', top: 0, zIndex: 1 }}>
                 <th style={thStyle}></th>
                 <th style={{ ...thStyle, textAlign: 'left', minWidth: 140 }}>Designation</th>
-                {VISIBLE_COLS.map(col => (
+                {(sectionType.visibleCols ?? VISIBLE_COLS).map(col => (
                   <th key={col} style={thStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2 }}>
                       <span>{COL_LABEL[col] ?? col}</span>
@@ -276,7 +286,7 @@ function SectionTable({
                       <td style={{ ...tdStyle, textAlign: 'left', fontWeight: 600, color: '#1e293b', whiteSpace: 'nowrap' }}>
                         {row.designation}
                       </td>
-                      {VISIBLE_COLS.map(col => (
+                      {(sectionType.visibleCols ?? VISIBLE_COLS).map(col => (
                         <td key={col} style={{ ...tdStyle, fontFamily: 'monospace', color: '#334155' }}>
                           {fmt(row[col] as number, col)}
                         </td>
@@ -305,7 +315,7 @@ function SectionTable({
                         </div>
                       </td>
                     </tr>
-                    {isExpanded && <DetailCard row={row} />}
+                    {isExpanded && <DetailCard row={row} stdRef={sectionType.ref} columnGroups={sectionType.columnGroups} />}
                   </React.Fragment>
                 )
               })}
@@ -425,8 +435,12 @@ export default function SteelSections() {
             onSelectRow={handleSelectRow}
             onHighlightRow={row => setSelectedRow(row)}
           />
+        ) : sectionType.family === 'open' ? (
+          <UbUcCapacityPanel row={selectedRow} toolAccess={toolAccess} />
+        ) : sectionType.family === 'cold-formed' ? (
+          <ColdFormedCapacityPanel row={selectedRow} toolAccess={toolAccess} />
         ) : (
-          <CapacityPanel row={selectedRow} toolAccess={toolAccess} />
+          <HollowCapacityPanel row={selectedRow} toolAccess={toolAccess} />
         )}
       </div>
       </div>

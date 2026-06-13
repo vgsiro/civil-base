@@ -32,7 +32,7 @@ const ssUbUc = {
   // Compression
   bbuc_comp_title:            'Compression — Buckling Resistance',
   bbuc_comp_ref:              '§6.3.1',
-  bbuc_comp_axis_col:         'Axis',
+  bbuc_comp_axis_col:         'Length (m)',
   bbuc_comp_footer:           'Buckling lengths (m)',
 
   // Export modal

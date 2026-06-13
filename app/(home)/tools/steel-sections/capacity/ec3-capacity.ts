@@ -5,7 +5,7 @@
  * Outputs in kN and kNm.
  */
 
-import type { SectionRow } from '../data/index'
+import type { SectionRow } from '../_shared/types'
 
 // ── Constants ────────────────────────────────────────────────────────────────
 

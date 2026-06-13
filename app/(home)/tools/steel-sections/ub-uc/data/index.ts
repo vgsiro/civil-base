@@ -8,6 +8,7 @@ export const UB_UC_SECTION_TYPES: SectionType[] = [
     label: 'Universal Beams (UB)',
     shortLabel: 'UB',
     ref: 'BS EN 10365:2017',
+    family: 'open',
     rows: UB_SECTIONS,
   },
   {
@@ -15,6 +16,7 @@ export const UB_UC_SECTION_TYPES: SectionType[] = [
     label: 'Universal Columns (UC)',
     shortLabel: 'UC',
     ref: 'BS EN 10365:2017',
+    family: 'open',
     rows: UC_SECTIONS,
   },
 ]
