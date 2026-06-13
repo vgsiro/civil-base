@@ -1,5 +1,5 @@
 'use client'
-import { Check, Tag, CreditCard, Search, ExternalLink, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { Check, Tag, CreditCard, Search, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import type { UpgradeRequest } from './data'
 import { tierLabel, tierColor, tierBg } from '../../../../../lib/useSubscription'
@@ -130,9 +130,16 @@ export function UsersTable({ users, search, tierFilter, onSearchChange, onTierFi
                     <td style={{ padding: '10px 14px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <AvatarCell displayName={u.display_name} username={u.username} avatarColor={u.avatar_color} avatarUrl={u.avatar_url} size={30} fontSize={11} />
-                        <div>
+                        <div style={{ minWidth: 0 }}>
                           <div style={{ fontSize: 13, fontWeight: 600, color: '#f1f5f9' }}>{u.display_name || u.username || u.id.slice(0, 8)}</div>
-                          {u.username && <div style={{ fontSize: 11, color: '#475569' }}>@{u.username}</div>}
+                          {u.username && (
+                            <a href={`/u/${u.username}`} target="_blank" rel="noreferrer"
+                              style={{ fontSize: 11, color: '#475569', textDecoration: 'none' }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#60a5fa' }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#475569' }}>
+                              @{u.username}
+                            </a>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -155,14 +162,6 @@ export function UsersTable({ users, search, tierFilter, onSearchChange, onTierFi
                             <Tag size={10} />
                             {u.tier === 'normal' ? 'Upgrade' : u.tier === 'premium' || u.tier === 'admin' ? 'Change' : 'Upgrade / Downgrade'}
                           </button>
-                        )}
-                        {u.username && (
-                          <a href={`/profile/${u.username}`} target="_blank" rel="noreferrer"
-                            style={{ display: 'flex', alignItems: 'center', gap: 3, padding: '4px 8px', borderRadius: 6, border: '1px solid #334155', background: 'none', color: '#475569', fontSize: 11, cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap' as const }}
-                            onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#94a3b8'; (e.currentTarget as HTMLAnchorElement).style.background = '#ffffff08' }}
-                            onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#475569'; (e.currentTarget as HTMLAnchorElement).style.background = 'none' }}>
-                            <ExternalLink size={10} /> Profile
-                          </a>
                         )}
                       </div>
                     </td>

@@ -15,8 +15,45 @@ interface Props {
   range: RangeMode
 }
 
+type UserTab = 'professionals' | 'nonprofessionals' | 'unverified'
+
+const HEADERS = ['User', 'Email', 'Profession', 'Subscription', 'Joined']
+
+function UserTable({ rows, emptyText }: { rows: UserRow[]; emptyText: string }) {
+  return (
+    <div style={{ background: '#1e293b', borderRadius: 12, border: '1px solid #334155', overflow: 'hidden' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' as const, tableLayout: 'fixed' as const }}>
+        <colgroup>
+          <col style={{ width: '22%' }} />
+          <col style={{ width: '20%' }} />
+          <col style={{ width: '22%' }} />
+          <col style={{ width: '13%' }} />
+          <col style={{ width: '10%' }} />
+        </colgroup>
+        <thead>
+          <tr style={{ background: '#0f172a' }}>
+            {HEADERS.map(h => (
+              <th key={h} style={{ padding: '10px 16px', textAlign: 'left' as const, fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((u, i) => <UserTableRow key={u.id} u={u} i={i} />)}
+        </tbody>
+      </table>
+      {rows.length === 0 && (
+        <div style={{ padding: '40px', textAlign: 'center' as const, color: '#64748b', fontSize: 14 }}>{emptyText}</div>
+      )}
+      <div style={{ padding: '8px 16px', borderTop: '1px solid #0f172a', fontSize: 11, color: '#334155' }}>
+        {rows.length} user{rows.length !== 1 ? 's' : ''}
+      </div>
+    </div>
+  )
+}
+
 export default function UsersTab({ users, setUsers, setStats, loading, setLoading, range }: Props) {
   const [search, setSearch] = useState('')
+  const [activeTab, setActiveTab] = useState<UserTab>('professionals')
 
   const filtered = users.filter(u => {
     if (!search) return true
@@ -30,6 +67,16 @@ export default function UsersTab({ users, setUsers, setStats, loading, setLoadin
     )
   })
 
+  const professionals    = filtered.filter(u => u.is_professional === true)
+  const nonprofessionals = filtered.filter(u => u.is_professional === false)
+  const unverified       = filtered.filter(u => u.is_professional === null)
+
+  const TABS: { id: UserTab; label: string; count: number; color: string }[] = [
+    { id: 'professionals',    label: 'Professionals',    count: professionals.length,    color: '#34d399' },
+    { id: 'nonprofessionals', label: 'Non-professionals', count: nonprofessionals.length, color: '#fbbf24' },
+    { id: 'unverified',       label: 'Unverified',        count: unverified.length,       color: '#64748b' },
+  ]
+
   async function refresh() {
     setLoading(true)
     const data = await fetchUsers(supabase, range)
@@ -37,7 +84,13 @@ export default function UsersTab({ users, setUsers, setStats, loading, setLoadin
     setLoading(false)
   }
 
-  const headers = ['User', 'Email', 'Profession', 'Subscription', 'Joined']
+  const rows = activeTab === 'professionals' ? professionals
+    : activeTab === 'nonprofessionals' ? nonprofessionals
+    : unverified
+
+  const emptyText = activeTab === 'professionals' ? 'No verified professionals.'
+    : activeTab === 'nonprofessionals' ? 'No verified non-professionals.'
+    : 'No unverified users.'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -55,36 +108,29 @@ export default function UsersTab({ users, setUsers, setStats, loading, setLoadin
           style={{ flex: 1, background: 'none', border: 'none', outline: 'none', color: '#e2e8f0', fontSize: 13 }} />
       </div>
 
+      <div style={{ display: 'flex', gap: 4, borderBottom: '1px solid #1e293b' }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
+            padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none', borderRadius: '8px 8px 0 0',
+            background: activeTab === t.id ? '#1e293b' : 'none',
+            color: activeTab === t.id ? t.color : '#475569',
+            borderBottom: activeTab === t.id ? `2px solid ${t.color}` : '2px solid transparent',
+            transition: 'all 0.12s',
+          }}>
+            {t.label}
+            {t.count > 0 && (
+              <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700, background: activeTab === t.id ? t.color + '25' : '#1e293b', color: activeTab === t.id ? t.color : '#475569', borderRadius: 10, padding: '1px 6px' }}>
+                {t.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
       {loading ? (
         <div style={{ color: '#64748b', fontSize: 14, padding: '40px 0', textAlign: 'center' as const }}>Loading…</div>
       ) : (
-        <div style={{ background: '#1e293b', borderRadius: 12, border: '1px solid #334155', overflow: 'hidden' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' as const, tableLayout: 'fixed' as const }}>
-            <colgroup>
-              <col style={{ width: '22%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '20%' }} />
-              <col style={{ width: '13%' }} />
-              <col style={{ width: '10%' }} />
-            </colgroup>
-            <thead>
-              <tr style={{ background: '#0f172a' }}>
-                {headers.map(h => (
-                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left' as const, fontSize: 11, fontWeight: 700, color: '#64748b', textTransform: 'uppercase' as const, letterSpacing: 0.8 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((u, i) => <UserTableRow key={u.id} u={u} i={i} />)}
-            </tbody>
-          </table>
-          {filtered.length === 0 && (
-            <div style={{ padding: '40px', textAlign: 'center' as const, color: '#64748b', fontSize: 14 }}>No users found.</div>
-          )}
-          <div style={{ padding: '8px 16px', borderTop: '1px solid #0f172a', fontSize: 11, color: '#334155' }}>
-            {filtered.length} of {users.length} users
-          </div>
-        </div>
+        <UserTable rows={rows} emptyText={emptyText} />
       )}
     </div>
   )

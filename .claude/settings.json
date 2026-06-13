@@ -222,7 +222,19 @@
       "Bash(dir /s /b \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\_components\\\\social\\\\post\\\\*.tsx\")",
       "Bash(dir /s /b \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\_components\\\\social\\\\post\\\\Poll*\")",
       "Bash(xargs grep -l -i \"donat\")",
-      "Bash(Remove-Item \"D:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\.git\\\\index.lock\" -Force)"
+      "Bash(Remove-Item \"D:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\.git\\\\index.lock\" -Force)",
+      "Bash(git remote *)",
+      "Bash(Get-ChildItem \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\" -MaxDepth 1 -Filter \"*.md\")",
+      "Bash(Get-ChildItem -Path \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\\\(home\\)\\\\tools\\\\steel-sections\\\\\" -Recurse -File | Select-Object -ExpandProperty FullName)",
+      "Bash(Get-ChildItem \"d:\\\\CODE\\\\08. Civil Engineering Data\\\\lecture-notes\\\\app\\\\i18n\\\\locales\\\\vi\\\\tools\\\\\" -Recurse | Select-Object FullName)",
+      "Bash(xargs grep -l \"ProfessionalVerif\\\\|professionalVerif\\\\|professional.*verification\")",
+      "Bash(xargs grep -l \"verify_requests\\\\|is_verified\")",
+      "Bash(xargs grep -l \"instant\\\\|back.*nav\\\\|router.*cache\\\\|client.*cache\")",
+      "Bash(xargs grep -l \"staleTimes\\\\|router cache\\\\|client-side cache\")",
+      "Bash(grep -v \"//\\\\|svg\\\\|fill\\\\|stroke\")",
+      "Bash(xargs grep -l \"router cache\\\\|staleTimes\\\\|client.*cache\\\\|back.*forward\\\\|popstate\")",
+      "Bash(grep -v \"//\\\\|svg\\\\|fill\\\\|stroke\\\\|color\\\\|background\")",
+      "Bash(grep -rn \"href.*feed\\\\|href.*\\\\/u\\\\/\" \"d:/CODE/08. Civil Engineering Data/lecture-notes/app/_components/shared/HomeNavBar.tsx\")"
     ],
     "additionalDirectories": [
       "D:\\CODE\\08. Civil Engineering Data\\lecture-notes\\app\\post\\[id]",

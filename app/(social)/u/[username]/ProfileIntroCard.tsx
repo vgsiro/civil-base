@@ -1,20 +1,77 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { MapPin, Globe, Link2, Building2, Calendar, Award, GraduationCap, ExternalLink } from 'lucide-react'
 import type { Profile } from '../../../_types'
 import { useTranslation } from '../../../i18n/LanguageContext'
 import { EXPERIENCE_KEYS, PROFESSION_KEYS, SPECIALIZATION_KEYS } from './EditModal'
+import { supabase } from '@/lib/supabase'
+
+const AVATAR_COLORS = [
+  'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+  'linear-gradient(135deg, #10b981, #3b82f6)',
+  'linear-gradient(135deg, #f59e0b, #ef4444)',
+  'linear-gradient(135deg, #ec4899, #8b5cf6)',
+  'linear-gradient(135deg, #06b6d4, #10b981)',
+  'linear-gradient(135deg, #f97316, #f59e0b)',
+]
+
+interface PhotoItem { id: string; media_url: string }
+interface FriendItem { id: string; username: string; display_name: string | null; full_name: string | null; avatar_color: number; avatar_url: string | null }
 
 interface Props {
   profile: Profile
   joined: string
   isOwnProfile: boolean
   onEditOpen: () => void
+  viewerUserId: string | null
+  friendStatus: 'none' | 'pending_sent' | 'pending_received' | 'friends'
 }
 
-export default function ProfileIntroCard({ profile, joined, isOwnProfile, onEditOpen }: Props) {
+export default function ProfileIntroCard({ profile, joined, isOwnProfile, onEditOpen, viewerUserId, friendStatus }: Props) {
   const { t } = useTranslation()
   const [bioExpanded, setBioExpanded] = useState(false)
+  const [photos, setPhotos] = useState<PhotoItem[]>([])
+  const [friends, setFriends] = useState<FriendItem[]>([])
+  const [friendCount, setFriendCount] = useState(0)
+
+  useEffect(() => {
+    // Determine which visibilities the viewer can see
+    const allowedVisibilities = ['public']
+    if (isOwnProfile) {
+      allowedVisibilities.push('friends', 'private')
+    } else if (friendStatus === 'friends') {
+      allowedVisibilities.push('friends')
+    }
+
+    // Fetch 9 most recent photo posts (image + profile_photo + cover_photo)
+    supabase.from('posts')
+      .select('id, media_url')
+      .eq('user_id', profile.id)
+      .in('post_type', ['image', 'profile_photo', 'cover_photo'])
+      .in('visibility', allowedVisibilities)
+      .not('media_url', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(9)
+      .then(({ data }) => setPhotos((data as PhotoItem[]) ?? []))
+
+    // Fetch accepted friends + their profiles
+    supabase.from('friendships')
+      .select('id, requester_id, receiver_id')
+      .eq('status', 'accepted')
+      .or(`requester_id.eq.${profile.id},receiver_id.eq.${profile.id}`)
+      .limit(9)
+      .then(async ({ data: fships }) => {
+        if (!fships?.length) return
+        setFriendCount(fships.length)
+        const friendIds = fships.map((f: any) =>
+          f.requester_id === profile.id ? f.receiver_id : f.requester_id
+        )
+        const { data: profiles } = await supabase.from('profiles')
+          .select('id, username, display_name, full_name, avatar_color, avatar_url')
+          .in('id', friendIds)
+        setFriends((profiles as FriendItem[]) ?? [])
+      })
+  }, [profile.id, isOwnProfile, friendStatus])
 
   function tp(value: string | null | undefined): string {
     if (!value) return ''
@@ -213,6 +270,69 @@ export default function ProfileIntroCard({ profile, joined, isOwnProfile, onEdit
           </div>
         </div>
       )}
+
+      {/* Photos card */}
+      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e4e6eb', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#050505' }}>{t('section_photos')}</div>
+          {photos.length > 0 && (
+            <a href={`/u/${profile.username}/photos`} style={{ fontSize: 14, fontWeight: 600, color: '#3b82f6', textDecoration: 'none' }}
+              onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+              onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
+              {t('photos_see_all')}
+            </a>
+          )}
+        </div>
+        {photos.length === 0 ? (
+          <p style={{ margin: 0, fontSize: 14, color: '#65676b' }}>{t('photos_empty')}</p>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
+            {photos.map(p => (
+              <a key={p.id} href={`/post/${p.id}`} target="_blank" rel="noopener noreferrer"
+                style={{ aspectRatio: '1', display: 'block', borderRadius: 6, overflow: 'hidden', background: '#f0f2f5' }}>
+                <img src={p.media_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Friends card */}
+      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid #e4e6eb', padding: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+          <div style={{ fontSize: 20, fontWeight: 800, color: '#050505' }}>{t('section_friends')}</div>
+          {friends.length > 0 && (
+            <a href={`/u/${profile.username}/friends`} style={{ fontSize: 14, fontWeight: 600, color: '#3b82f6', textDecoration: 'none' }}
+              onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+              onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>
+              {t('friends_see_all')}
+            </a>
+          )}
+        </div>
+        {friendCount > 0 && (
+          <div style={{ fontSize: 14, color: '#65676b', marginBottom: 12 }}>{friendCount} {t('friends_count')}</div>
+        )}
+        {friends.length === 0 ? (
+          <p style={{ margin: 0, fontSize: 14, color: '#65676b' }}>{t('friends_empty')}</p>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+            {friends.map(f => (
+              <a key={f.id} href={`/u/${f.username}`}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, textDecoration: 'none' }}>
+                {f.avatar_url
+                  ? <img src={f.avatar_url} alt="" style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+                  : <div style={{ width: '100%', aspectRatio: '1', borderRadius: 8, background: AVATAR_COLORS[f.avatar_color ?? 0], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 800, color: '#fff' }}>
+                      {(f.display_name || f.full_name || f.username || '?')[0].toUpperCase()}
+                    </div>
+                }
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#050505', textAlign: 'center' as const, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const, width: '100%' }}>
+                  {f.display_name || f.full_name || f.username}
+                </span>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }

@@ -39,6 +39,7 @@ export async function approveVerifyRequest(supabase: SupabaseClient, req: Verify
     p_user_id: req.user_id,
     p_profession: prof?.pending_profession ?? null,
     p_specializations: prof?.pending_specializations ?? null,
+    p_is_professional: req.is_professional ?? true,
   })
   if (error) throw error
 

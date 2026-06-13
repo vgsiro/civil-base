@@ -14,13 +14,16 @@ function applyRange(q: any, range: RangeMode) {
 export async function fetchPosts(supabase: SupabaseClient, range: RangeMode): Promise<PostRow[]> {
   const { data, error } = await applyRange(
     supabase.from('posts')
-      .select('id,user_id,post_type,body,visibility,category,is_question,created_at,profiles!posts_user_id_fkey(username,display_name,full_name)')
+      .select('id,user_id,post_type,body,visibility,category,is_question,created_at,profiles!posts_user_id_fkey(username,display_name,full_name,avatar_color,avatar_url)')
       .order('created_at', { ascending: false })
       .limit(200),
     range,
   )
   if (error) console.error('[Admin] fetchPosts error:', error.message)
-  return (data as unknown as PostRow[]) ?? []
+  return ((data as any[]) ?? []).map(p => ({
+    ...p,
+    profiles: Array.isArray(p.profiles) ? (p.profiles[0] ?? null) : p.profiles,
+  })) as PostRow[]
 }
 
 export type ActionMode = 'delete' | 'warn'

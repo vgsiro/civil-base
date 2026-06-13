@@ -31,7 +31,7 @@ export function toLatex(s: string): string {
     .replace(/·/g, ' {\\cdot} ').replace(/×/g, ' {\\times} ')
     .replace(/−/g, ' - ')
     .replace(/≤/g, ' {\\le} ').replace(/≥/g, ' {\\ge} ').replace(/±/g, ' {\\pm} ')
-    .replace(/\bmax\b/g, '\\max').replace(/\bmin\b/g, '\\min').replace(/\bln\b/g, '\\ln')
+    .replace(/(?<!\\)\bmax\b/g, '\\max').replace(/(?<!\\)\bmin\b/g, '\\min').replace(/(?<!\\)\bln\b/g, '\\ln')
     .replace(/½/g, '\\tfrac{1}{2}')
     .replace(/‰/g, '\\char"2030')
     .replace(/\bkPa\b/g, '\\,\\mathrm{kPa}').replace(/\bkN·m\b/g, '\\,\\mathrm{kN{\\cdot}m}')

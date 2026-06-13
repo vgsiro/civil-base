@@ -13,7 +13,7 @@ function applyRange(q: any, range: RangeMode) {
 export async function fetchUsers(supabase: SupabaseClient, range: RangeMode): Promise<UserRow[]> {
   const { data: profiles } = await applyRange(
     supabase.from('profiles')
-      .select('id,username,display_name,full_name,profession,is_verified,avatar_color,avatar_url,email,created_at')
+      .select('id,username,display_name,full_name,profession,specializations,is_verified,is_professional,avatar_color,avatar_url,email,created_at')
       .order('created_at', { ascending: false })
       .limit(200),
     range,

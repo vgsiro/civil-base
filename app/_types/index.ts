@@ -143,6 +143,7 @@ export interface Profile {
   specializations: string[] | null
   featured_links: FeaturedLink[] | null
   is_verified: boolean
+  is_professional: boolean | null
   pending_profession: string | null
   pending_specializations: string[] | null
   avatar_url: string | null

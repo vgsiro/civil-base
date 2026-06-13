@@ -1,7 +1,7 @@
 'use client'
 import { AlertTriangle, HelpCircle, Tag, Link2 } from 'lucide-react'
 import type { PostRow } from '../../_lib/types'
-import { timeAgo } from '../../_lib/constants'
+import { timeAgo, AVATAR_COLORS } from '../../_lib/constants'
 import type { ActionMode } from './data'
 
 const CATEGORY_COLORS: Record<string, { bg: string; color: string }> = {
@@ -28,9 +28,25 @@ export function PostTableRow({ p, i, total, onWarn, onHide }: RowProps) {
       onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = 'transparent' }}>
       <td style={{ padding: '10px 16px', fontSize: 12, fontWeight: 700, color: '#334155', width: 36 }}>{total - i}</td>
       <td style={{ padding: '10px 16px' }}>
-        <a href={`/u/${p.profiles?.username}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: '#60a5fa', textDecoration: 'none', fontWeight: 600 }}>
-          @{p.profiles?.username ?? '—'}
-        </a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {p.profiles?.avatar_url
+            ? <img src={p.profiles.avatar_url} alt="" style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+            : <div style={{ width: 30, height: 30, borderRadius: '50%', background: AVATAR_COLORS[p.profiles?.avatar_color ?? 0], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                {(p.profiles?.display_name || p.profiles?.username || '?')[0].toUpperCase()}
+              </div>
+          }
+          <div style={{ minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#f1f5f9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+              {p.profiles?.display_name || p.profiles?.full_name || p.profiles?.username || '—'}
+            </div>
+            <a href={`/u/${p.profiles?.username}`} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 11, color: '#475569', textDecoration: 'none' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#60a5fa' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#475569' }}>
+              @{p.profiles?.username ?? '—'}
+            </a>
+          </div>
+        </div>
       </td>
       <td style={{ padding: '10px 16px' }}>
         <div style={{ fontSize: 13, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
@@ -49,6 +65,22 @@ export function PostTableRow({ p, i, total, onWarn, onHide }: RowProps) {
             <span style={{ fontSize: 10, fontWeight: 600, color: '#64748b', background: '#0f172a', borderRadius: 6, padding: '2px 6px' }}>{p.post_type}</span>
           </div>
           {catStyle && p.category && <span style={{ fontSize: 10, fontWeight: 600, color: catStyle.color, background: catStyle.bg, borderRadius: 6, padding: '2px 6px', width: 'fit-content' }}>{p.category}</span>}
+          {(() => {
+            const v = p.visibility
+            const cfg: Record<string, { color: string; bg: string; label: string }> = {
+              public:       { color: '#4ade80', bg: '#16a34a15', label: '🌐 Public' },
+              friends:      { color: '#fbbf24', bg: '#f59e0b15', label: '👥 Friends' },
+              private:      { color: '#f87171', bg: '#ef444415', label: '🔒 Private' },
+              warn_limited: { color: '#fb923c', bg: '#f9731615', label: '⚠ Warn limited' },
+              admin_hidden: { color: '#94a3b8', bg: '#33415520', label: '🚫 Hidden' },
+            }
+            const s = cfg[v ?? ''] ?? { color: '#64748b', bg: '#33415520', label: v ?? 'unknown' }
+            return (
+              <span style={{ fontSize: 10, fontWeight: 700, borderRadius: 6, padding: '2px 6px', width: 'fit-content', color: s.color, background: s.bg }}>
+                {s.label}
+              </span>
+            )
+          })()}
         </div>
       </td>
       <td style={{ padding: '10px 16px', fontSize: 12, color: '#64748b', whiteSpace: 'nowrap' as const }}>{timeAgo(p.created_at)}</td>

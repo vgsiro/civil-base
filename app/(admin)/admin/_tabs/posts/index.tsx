@@ -19,6 +19,7 @@ export default function PostsTab({ posts, setPosts, setWarnings, loading, setLoa
   const [postSection, setPostSection] = useState<'clean' | 'warned' | 'hidden'>('clean')
   const [postTypeFilter, setPostTypeFilter] = useState('all')
   const [postCategoryFilter, setPostCategoryFilter] = useState('all')
+  const [visibilityFilter, setVisibilityFilter] = useState('all')
   const [actionModal, setActionModal] = useState<{ post: PostRow; mode: ActionMode } | null>(null)
   const [actionReason, setActionReason] = useState('')
   const [actionNote, setActionNote] = useState('')
@@ -59,6 +60,7 @@ export default function PostsTab({ posts, setPosts, setWarnings, loading, setLoa
       if (!['question', 'discussion'].includes(postTypeFilter) && p.post_type !== postTypeFilter) return false
     }
     if (postCategoryFilter !== 'all' && p.category !== postCategoryFilter) return false
+    if (visibilityFilter !== 'all' && p.visibility !== visibilityFilter) return false
     return true
   })
   const sectionBorder = postSection === 'clean' ? '#334155' : postSection === 'warned' ? '#f59e0b40' : '#ef444440'
@@ -95,7 +97,13 @@ export default function PostsTab({ posts, setPosts, setWarnings, loading, setLoa
               </button>
             ))}
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' as const }}>
+            <select value={visibilityFilter} onChange={e => setVisibilityFilter(e.target.value)} style={selectStyle}>
+              <option value="all">All visibility</option>
+              <option value="public">Public</option>
+              <option value="friends">Friends</option>
+              <option value="private">Private</option>
+            </select>
             <select value={postTypeFilter} onChange={e => setPostTypeFilter(e.target.value)} style={selectStyle}>
               <option value="all">All types</option>
               <option value="question">Question</option>

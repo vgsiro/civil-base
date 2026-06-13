@@ -41,6 +41,7 @@ export interface VerifyRequest {
   doc_url: string | null
   note: string | null
   status: string
+  is_professional: boolean
   created_at: string
 }
 
@@ -50,7 +51,9 @@ export interface UserRow {
   display_name: string | null
   full_name: string | null
   profession: string | null
+  specializations: string[] | null
   is_verified: boolean
+  is_professional: boolean | null
   avatar_color: number
   avatar_url: string | null
   email: string | null
@@ -67,7 +70,7 @@ export interface PostRow {
   category: string | null
   is_question: boolean
   created_at: string
-  profiles: { username: string; display_name: string | null; full_name: string | null } | null
+  profiles: { username: string; display_name: string | null; full_name: string | null; avatar_color: number; avatar_url: string | null } | null
 }
 
 export interface Warning {

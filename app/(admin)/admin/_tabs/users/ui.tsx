@@ -1,5 +1,5 @@
 'use client'
-import { BadgeCheck, ExternalLink, X } from 'lucide-react'
+import { BadgeCheck, X } from 'lucide-react'
 import type { UserRow } from '../../_lib/types'
 import { AVATAR_COLORS, timeAgo } from '../../_lib/constants'
 import { tierColor, tierBg, tierLabel } from '../../../../../lib/useSubscription'
@@ -29,13 +29,12 @@ export function UserTableRow({ u, i, onRevoke }: { u: UserRow; i: number; onRevo
               </span>
               {u.is_verified && <BadgeCheck size={14} color="#3b82f6" fill="#3b82f6" strokeWidth={0} style={{ flexShrink: 0 }} />}
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 11, color: '#64748b' }}>@{u.username}</span>
-              <a href={`/u/${u.username}`} target="_blank" rel="noopener noreferrer"
-                style={{ display: 'flex', alignItems: 'center', color: '#3b82f6', opacity: 0.7 }} title="View profile">
-                <ExternalLink size={10} />
-              </a>
-            </div>
+            <a href={`/u/${u.username}`} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 11, color: '#475569', textDecoration: 'none' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#60a5fa' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.color = '#475569' }}>
+              @{u.username}
+            </a>
           </div>
         </div>
       </td>
@@ -45,9 +44,21 @@ export function UserTableRow({ u, i, onRevoke }: { u: UserRow; i: number; onRevo
         {u.email ?? <span style={{ color: '#334155' }}>—</span>}
       </td>
 
-      {/* Profession */}
-      <td style={{ padding: '10px 16px', fontSize: 13, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
-        {u.profession ?? <span style={{ color: '#475569' }}>—</span>}
+      {/* Profession + specializations */}
+      <td style={{ padding: '10px 16px' }}>
+        <div style={{ fontSize: 13, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>
+          {u.profession ?? <span style={{ color: '#475569' }}>—</span>}
+        </div>
+        {u.specializations && u.specializations.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 3, marginTop: 4 }}>
+            {u.specializations.slice(0, 3).map(s => (
+              <span key={s} style={{ fontSize: 10, fontWeight: 600, background: '#7c3aed15', color: '#a78bfa', borderRadius: 20, padding: '1px 7px', border: '1px solid #7c3aed30' }}>{s}</span>
+            ))}
+            {u.specializations.length > 3 && (
+              <span style={{ fontSize: 10, color: '#475569' }}>+{u.specializations.length - 3}</span>
+            )}
+          </div>
+        )}
       </td>
 
       {/* Subscription */}

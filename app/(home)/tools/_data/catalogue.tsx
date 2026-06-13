@@ -40,6 +40,7 @@ export interface ToolGroup {
 export const CATEGORIES: Record<string, ToolCategory> = {
   eurocode: { label: 'Eurocode',     accentColor: '#6366f1', accentBg: '#eef2ff' },
   general:  { label: 'General',      accentColor: '#f97316', accentBg: '#fff7ed' },
+  sci:      { label: 'SCI P363',     accentColor: '#0369a1', accentBg: '#e0f2fe' },
   // Add new categories here — e.g.:
   // tcvn: { label: 'TCVN', accentColor: '#10b981', accentBg: '#ecfdf5' },
 }
@@ -161,6 +162,39 @@ export const ALL_TOOL_GROUPS: ToolGroup[] = [
             <rect x="30" y="49" width="30" height="10" rx="2" fill="rgba(255,255,255,0.85)"/>
             <rect x="12" y="20" width="66" height="10" rx="1.5" fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2"/>
             <rect x="12" y="35" width="66" height="10" rx="1.5" fill="rgba(255,255,255,0.35)" stroke="rgba(255,255,255,0.7)" strokeWidth="1.2"/>
+          </svg>
+        ),
+      },
+    ],
+  },
+  {
+    tab: 'bluebook',
+    label: 'Blue Book — Steel Sections',
+    part: 'SCI P363',
+    desc: 'Section properties · BS EN 10365:2017',
+    category: CATEGORIES.general,
+    cards: [
+      {
+        id: 'steel-sections',
+        href: '/tools/steel-sections',
+        label: 'Steel Section Properties',
+        desc: 'UB · UC · dimensions, inertia, section moduli · BS EN 10365:2017',
+        accent:   '#0369a1',
+        gradient: 'linear-gradient(135deg, #0c4a6e, #0369a1)',
+        ref:      'SCI P363',
+        graphic: (
+          <svg width="90" height="65" viewBox="0 0 90 65" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* I-section outline */}
+            <rect x="22" y="8"  width="46" height="9" rx="1.5" fill="rgba(255,255,255,0.85)"/>
+            <rect x="38" y="17" width="14" height="23" rx="1" fill="rgba(255,255,255,0.5)" stroke="rgba(255,255,255,0.7)" strokeWidth="1"/>
+            <rect x="22" y="40" width="46" height="9" rx="1.5" fill="rgba(255,255,255,0.85)"/>
+            <line x1="10" y1="12" x2="20" y2="12" stroke="rgba(255,255,255,0.6)" strokeWidth="1" strokeDasharray="2 2"/>
+            <line x1="10" y1="44" x2="20" y2="44" stroke="rgba(255,255,255,0.6)" strokeWidth="1" strokeDasharray="2 2"/>
+            <line x1="11" y1="12" x2="11" y2="44" stroke="rgba(255,255,255,0.6)" strokeWidth="1"/>
+            <text x="6" y="30" fontSize="7" fill="rgba(255,255,255,0.9)" fontWeight="700" textAnchor="middle">h</text>
+            <line x1="72" y1="5"  x2="72" y2="10" stroke="rgba(255,255,255,0.6)" strokeWidth="1"/>
+            <line x1="22" y1="5"  x2="68" y2="5"  stroke="rgba(255,255,255,0.6)" strokeWidth="1"/>
+            <text x="45" y="4" fontSize="7" fill="rgba(255,255,255,0.9)" fontWeight="700" textAnchor="middle">b</text>
           </svg>
         ),
       },

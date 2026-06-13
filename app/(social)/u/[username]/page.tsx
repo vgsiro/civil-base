@@ -825,6 +825,8 @@ export default function PublicProfilePage() {
           joined={joined}
           isOwnProfile={isOwnProfile}
           onEditOpen={() => setShowEditModal(true)}
+          viewerUserId={currentUser?.id ?? null}
+          friendStatus={friendStatus}
         />
 
         {/* ── RIGHT: Posts or About ── */}

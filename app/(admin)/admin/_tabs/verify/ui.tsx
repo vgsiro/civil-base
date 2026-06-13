@@ -34,6 +34,9 @@ export function VerifyCard({ req, ordinal, expanded, onToggle, onApprove, onReje
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' as const }}>
             <span style={{ fontWeight: 700, color: '#f1f5f9', fontSize: 14 }}>{req.display_name || req.username}</span>
             <span style={{ fontSize: 12, color: '#64748b' }}>@{req.username}</span>
+            <span style={{ fontSize: 11, fontWeight: 700, background: req.is_professional ? '#10b98120' : '#f59e0b20', color: req.is_professional ? '#34d399' : '#fbbf24', borderRadius: 20, padding: '1px 8px', border: `1px solid ${req.is_professional ? '#10b98140' : '#f59e0b40'}` }}>
+              {req.is_professional ? 'Professional' : 'Non-professional'}
+            </span>
             {req.profession && (
               <span style={{ fontSize: 11, background: '#1d4ed820', color: '#60a5fa', borderRadius: 20, padding: '1px 8px', border: '1px solid #1d4ed840' }}>{req.profession}</span>
             )}
