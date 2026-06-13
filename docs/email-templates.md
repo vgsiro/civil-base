@@ -15,10 +15,13 @@ Address) → replace the **Message body** with the HTML below → **Save**.
 
 Brand: navy gradient `#0f172a → #1e293b`, blue accent `#3b82f6` (matches AuthModal).
 
-**Logo:** the header uses `https://civilaxis.com/logo.png` (served from `public/logo.png`).
-Email clients require a public `https://` image URL — `localhost` URLs won't render in
-a recipient's inbox, so the logo only appears once `civilaxis.com` is deployed and
-serving `/logo.png`. The `CIVILAXIS` wordmark text stays below the image as a fallback
+**Logo:** the header uses `https://civilaxis.com/logo-email.png` — a small 128×128
+(~27 KB) copy of `public/logo.png`, generated specifically for email. The full-size
+`logo.png` is ~1 MB, which Gmail and other clients block/fail to load, so it must NOT
+be used in emails. Email clients require a public `https://` image URL — `localhost`
+URLs won't render in a recipient's inbox, so the logo only appears once `civilaxis.com`
+is deployed and serving `/logo-email.png`. The `CIVILAXIS` wordmark text stays below
+the image as a fallback
 if a client blocks images.
 
 ---
@@ -36,7 +39,7 @@ Subject suggestion: `Confirm your CivilAxis account`
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(15,23,42,0.12);">
         <tr><td style="background:linear-gradient(135deg,#0f172a,#1e293b); padding:32px 32px; text-align:center;">
-          <img src="https://civilaxis.com/logo.png" alt="CivilAxis" width="56" height="56" style="display:inline-block; width:56px; height:56px; border-radius:12px; margin-bottom:10px;">
+          <img src="https://civilaxis.com/logo-email.png" alt="CivilAxis" width="56" height="56" style="display:inline-block; width:56px; height:56px; border-radius:12px; margin-bottom:10px;">
           <div style="font-size:11px; font-weight:700; color:#64748b; letter-spacing:0.18em; margin-bottom:6px;">CIVILAXIS</div>
           <div style="font-size:24px; font-weight:800; color:#ffffff;">Welcome aboard! 🎉</div>
         </td></tr>
@@ -84,7 +87,7 @@ Subject suggestion: `Your CivilAxis sign-in link`
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(15,23,42,0.12);">
         <tr><td style="background:linear-gradient(135deg,#0f172a,#1e293b); padding:32px 32px; text-align:center;">
-          <img src="https://civilaxis.com/logo.png" alt="CivilAxis" width="56" height="56" style="display:inline-block; width:56px; height:56px; border-radius:12px; margin-bottom:10px;">
+          <img src="https://civilaxis.com/logo-email.png" alt="CivilAxis" width="56" height="56" style="display:inline-block; width:56px; height:56px; border-radius:12px; margin-bottom:10px;">
           <div style="font-size:11px; font-weight:700; color:#64748b; letter-spacing:0.18em; margin-bottom:6px;">CIVILAXIS</div>
           <div style="font-size:24px; font-weight:800; color:#ffffff;">Sign in to CivilAxis 🔑</div>
         </td></tr>
@@ -129,7 +132,7 @@ Subject suggestion: `Reset your CivilAxis password`
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(15,23,42,0.12);">
         <tr><td style="background:linear-gradient(135deg,#0f172a,#1e293b); padding:32px 32px; text-align:center;">
-          <img src="https://civilaxis.com/logo.png" alt="CivilAxis" width="56" height="56" style="display:inline-block; width:56px; height:56px; border-radius:12px; margin-bottom:10px;">
+          <img src="https://civilaxis.com/logo-email.png" alt="CivilAxis" width="56" height="56" style="display:inline-block; width:56px; height:56px; border-radius:12px; margin-bottom:10px;">
           <div style="font-size:11px; font-weight:700; color:#64748b; letter-spacing:0.18em; margin-bottom:6px;">CIVILAXIS</div>
           <div style="font-size:24px; font-weight:800; color:#ffffff;">Reset your password 🔒</div>
         </td></tr>
@@ -174,7 +177,7 @@ Subject suggestion: `Confirm your new CivilAxis email`
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 8px 32px rgba(15,23,42,0.12);">
         <tr><td style="background:linear-gradient(135deg,#0f172a,#1e293b); padding:32px 32px; text-align:center;">
-          <img src="https://civilaxis.com/logo.png" alt="CivilAxis" width="56" height="56" style="display:inline-block; width:56px; height:56px; border-radius:12px; margin-bottom:10px;">
+          <img src="https://civilaxis.com/logo-email.png" alt="CivilAxis" width="56" height="56" style="display:inline-block; width:56px; height:56px; border-radius:12px; margin-bottom:10px;">
           <div style="font-size:11px; font-weight:700; color:#64748b; letter-spacing:0.18em; margin-bottom:6px;">CIVILAXIS</div>
           <div style="font-size:24px; font-weight:800; color:#ffffff;">Confirm your new email ✉️</div>
         </td></tr>
