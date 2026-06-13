@@ -2,7 +2,8 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import { LogIn, X, Eye, EyeOff } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+import { supabase, setRememberMe } from '@/lib/supabase'
+import { signUpWithProfile, EmailValidationError } from '../../_lib/auth'
 import { useTranslation } from '../../i18n/LanguageContext'
 
 function PasswordInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -65,12 +66,19 @@ export default function SignInPromptModal({ action, onClose }: {
       if (!agreedToTerms) { setError(t('home_auth_err_agree_terms')); return }
     }
     setLoading(true)
-    const { error: err } = mode === 'signin'
-      ? await supabase.auth.signInWithPassword({ email: email.trim(), password })
-      : await supabase.auth.signUp({ email: email.trim(), password })
+    setRememberMe(true) // no checkbox here — default to persisted session
+    let err: any = null
+    if (mode === 'signin') {
+      const res = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      err = res.error
+    } else {
+      err = await signUpWithProfile(email.trim(), password)
+    }
     setLoading(false)
     if (err) {
-      setError(err.message)
+      if (err instanceof EmailValidationError) setError(t('home_auth_err_email_invalid'))
+      else if (/email not confirmed/i.test(err.message)) setError(t('home_auth_err_email_not_confirmed'))
+      else setError(err.message)
     } else if (mode === 'signup') {
       setSuccess(t('home_auth_success_check_email'))
     } else {
@@ -130,6 +138,9 @@ export default function SignInPromptModal({ action, onClose }: {
             <div style={{ fontSize: 16, fontWeight: 800, color: '#0f172a' }}>{t('home_auth_check_email_title')}</div>
             <div style={{ fontSize: 13, color: '#475569', lineHeight: 1.6 }}>
               {t('home_auth_check_email_sent')} <strong>{email}</strong>.<br />{t('home_auth_check_email_activate')}
+            </div>
+            <div style={{ fontSize: 12, color: '#b45309', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '8px 12px', lineHeight: 1.5 }}>
+              {t('home_auth_check_email_spam')}
             </div>
             <button onClick={onClose}
               style={{ padding: '10px 28px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>

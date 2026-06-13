@@ -2,7 +2,7 @@
 import { GraduationCap, Home, Search, X as XIcon, ChevronDown } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { supabase } from '@/lib/supabase'
+import { supabase, setRememberMe } from '@/lib/supabase'
 import { useTranslation } from '../../../i18n/LanguageContext'
 import type { TranslationKey } from '../../../i18n/index'
 import type { PostCategory } from '../../../_types'
@@ -453,7 +453,8 @@ export default function TopNavBar({
       {showAuthModal && (
         <AuthModal
           onClose={() => setShowAuthModal(false)}
-          signIn={async (email, password) => {
+          signIn={async (email, password, remember = true) => {
+            setRememberMe(remember)
             const { error } = await supabase.auth.signInWithPassword({ email, password })
             if (!error) setShowAuthModal(false)
             return error

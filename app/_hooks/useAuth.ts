@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { signUpWithProfile } from '../_lib/auth'
+import { supabase, setRememberMe } from '@/lib/supabase'
+import { signUpWithProfile, ensureProfile } from '../_lib/auth'
 import type { User } from '@supabase/supabase-js'
 
 export function useAuth() {
@@ -13,17 +13,21 @@ export function useAuth() {
       setUser(session?.user ?? null)
       setLoading(false)
     })
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
-      // Keep email in sync on profiles whenever user signs in
-      if (session?.user?.email) {
-        supabase.from('profiles').update({ email: session.user.email }).eq('id', session.user.id)
+      const su = session?.user
+      if (su) {
+        // First confirmed login: create the profile row if it doesn't exist yet.
+        if (event === 'SIGNED_IN') ensureProfile(su.id, su.email ?? undefined)
+        // Keep email in sync on profiles whenever the user signs in.
+        if (su.email) supabase.from('profiles').update({ email: su.email }).eq('id', su.id)
       }
     })
     return () => subscription.unsubscribe()
   }, [])
 
-  async function signIn(email: string, password: string) {
+  async function signIn(email: string, password: string, remember: boolean = true) {
+    setRememberMe(remember)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     return error
   }
