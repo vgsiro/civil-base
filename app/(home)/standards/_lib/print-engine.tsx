@@ -12,7 +12,7 @@ export interface ReportMeta {
   date: string
 }
 
-/** One printable section. Set isRef=true for the first "report" page (RectReport style — has its own header and cb-sections grid). */
+/** One printable section. Set isRef=true for sections that use a cb-sections two-col grid (like RectReport). */
 export interface PrintSection {
   ref: RefObject<HTMLDivElement | null>
   /** Shown as a bold heading above the section in the PDF. Omit for the first report page. */
@@ -101,11 +101,13 @@ export function runPrint(sections: PrintSection[], meta: ReportMeta) {
 
   const MM = 96 / 25.4
   const PAGE_H = 297 * MM
-  const MARGIN_X = 15
-  const HDR_H_MM = 13; const FTR_H_MM = 14
-  const HDR_GAP_MM = 2; const FTR_GAP_MM = 6
-  const TOP_P1_MM = 10; const TOP_PN_MM = HDR_H_MM + HDR_GAP_MM
-  const BOT_MM = FTR_H_MM + FTR_GAP_MM
+  const MARGIN_X = 15; const MARGIN_Y = 10
+  const HDR_H_MM = 8; const FTR_H_MM = 8
+  const HDR_GAP_MM = 4; const FTR_GAP_MM = 4; const P1_GAP_MM = 6
+  const P1_HDR_H_MM = 32   // project info block on first page (blue banner ~10mm + 2-row meta grid ~18mm + gap ~4mm)
+  const TOP_P1_MM = MARGIN_Y + P1_HDR_H_MM + P1_GAP_MM
+  const TOP_PN_MM = MARGIN_Y + HDR_H_MM + HDR_GAP_MM
+  const BOT_MM = MARGIN_Y + FTR_H_MM + FTR_GAP_MM
   const TOP_P1 = TOP_P1_MM * MM; const TOP_PN = TOP_PN_MM * MM
   const BOT = BOT_MM * MM
   const USABLE_P1 = PAGE_H - TOP_P1 - BOT
@@ -123,10 +125,11 @@ export function runPrint(sections: PrintSection[], meta: ReportMeta) {
         page-break-after: always; background: #fff;
         -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .cb-page:last-child { page-break-after: auto; }
-      .cb-hdr { position: absolute; top: 0; left: ${MARGIN_X}mm; right: ${MARGIN_X}mm; height: ${HDR_H_MM}mm;
+      .cb-hdr { position: absolute; top: ${MARGIN_Y}mm; left: ${MARGIN_X}mm; right: ${MARGIN_X}mm; height: ${HDR_H_MM}mm;
         display: flex; align-items: center; justify-content: space-between;
         border-bottom: 1px solid #e2e8f0; background: #fff; font-size: 8px; color: #64748b; }
-      .cb-ftr { position: absolute; bottom: 0; left: ${MARGIN_X}mm; right: ${MARGIN_X}mm; height: ${FTR_H_MM}mm;
+      .cb-hdr-p1 { top: ${MARGIN_Y}mm; height: ${P1_HDR_H_MM}mm; display: block; border-bottom: none; }
+      .cb-ftr { position: absolute; bottom: ${MARGIN_Y}mm; left: ${MARGIN_X}mm; right: ${MARGIN_X}mm; height: ${FTR_H_MM}mm;
         display: flex; align-items: center; justify-content: space-between;
         border-top: 1.5px solid #e2e8f0; background: #fff; font-size: 8px; color: #64748b; }
       .cb-flow { position: absolute; left: ${MARGIN_X}mm; right: ${MARGIN_X}mm;
@@ -261,10 +264,40 @@ export function runPrint(sections: PrintSection[], meta: ReportMeta) {
     reportRoot.id = '__cb_report_root__'
     reportRoot.style.cssText = 'display:none; font-family:"Segoe UI",Arial,sans-serif; font-size:11px; color:#1e293b;'
 
+    const logoSvg = `<svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="6" fill="#1d4ed8"/><rect x="6" y="22" width="20" height="3" rx="1.5" fill="white" opacity="0.9"/><rect x="7" y="7" width="3" height="15" rx="1.5" fill="white"/><rect x="22" y="7" width="3" height="15" rx="1.5" fill="white"/><rect x="10" y="7" width="12" height="3" rx="1.5" fill="white" opacity="0.7"/></svg>`
+    const metaFields: [string, string][] = [
+      ['Project',          meta.project   || '—'],
+      ['Report / Subject', meta.report    || '—'],
+      ['Designer',         meta.designer  || '—'],
+      ['Checker',          meta.checker   || '—'],
+      ['Approver',         meta.approver  || '—'],
+      ['Date',             meta.date      || '—'],
+    ]
+    const metaCells = metaFields.map(([label, value], i) => `
+      <div style="padding:6px 10px;background:${i % 2 === 0 ? '#f0f9ff' : '#fff'};${i % 3 !== 2 ? 'border-right:1px solid #e0f2fe;' : ''}${i < 3 ? 'border-bottom:1px solid #e0f2fe;' : ''}">
+        <div style="font-size:8px;color:#64748b;text-transform:uppercase;letter-spacing:.05em;font-weight:600">${label}</div>
+        <div style="font-size:11px;color:#1e293b;font-weight:600;margin-top:1px;min-height:14px">${value}</div>
+      </div>`).join('')
+    const p1HeaderInner = `
+      <div style="background:linear-gradient(135deg,#1d4ed8,#1e40af);border-radius:6px 6px 0 0;padding:10px 16px;display:flex;align-items:center;gap:10px;">
+        ${logoSvg}
+        <div>
+          <div style="color:#fff;font-weight:800;font-size:15px;letter-spacing:-.02em">CivilAxis</div>
+          <div style="color:#bfdbfe;font-size:9px;letter-spacing:.06em;text-transform:uppercase">Structural Calculation Report</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid #bfdbfe;border-top:none;border-radius:0 0 6px 6px;overflow:hidden;">
+        ${metaCells}
+      </div>`
+
     pages.forEach(p => {
       const page = document.createElement('div')
       page.className = 'cb-page'
-      if (!p.isFirst) page.insertAdjacentHTML('beforeend', `<div class="cb-hdr">${headerInner}</div>`)
+      if (p.isFirst) {
+        page.insertAdjacentHTML('beforeend', `<div class="cb-hdr cb-hdr-p1">${p1HeaderInner}</div>`)
+      } else {
+        page.insertAdjacentHTML('beforeend', `<div class="cb-hdr">${headerInner}</div>`)
+      }
       const flow = document.createElement('div')
       flow.className = 'cb-flow'
       flow.style.top = `${p.isFirst ? TOP_P1_MM : TOP_PN_MM}mm`

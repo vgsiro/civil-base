@@ -71,6 +71,32 @@ const shared = {
   // Secure viewer
   std_viewer_default_cat_ec: 'Chung',
   std_viewer_default_cat_tcvn: 'Chung',
+
+  // Blue Book — SCI P363 bảng tra tiết diện thép
+  bb_title: 'Tra cứu đặc trưng tiết diện thép',
+  bb_subtitle: 'SCI P363 · BS EN 10365:2017 — kích thước và đặc trưng tiết diện',
+  bb_search_placeholder: 'Tìm theo ký hiệu (ví dụ: UB 406×178…)',
+  bb_col_designation: 'Ký hiệu',
+  bb_col_mass: 'Khối lượng',
+  bb_col_h: 'h',
+  bb_col_b: 'b',
+  bb_col_tw: 'tw',
+  bb_col_tf: 'tf',
+  bb_col_r: 'r',
+  bb_col_A: 'A',
+  bb_col_Ix: 'Ix',
+  bb_col_Iy: 'Iy',
+  bb_col_Wx: 'Wx',
+  bb_col_Wy: 'Wy',
+  bb_col_Zx: 'Zx',
+  bb_col_Zy: 'Zy',
+  bb_col_ix: 'ix',
+  bb_col_iy: 'iy',
+  bb_col_J: 'J',
+  bb_col_Cw: 'Cw',
+  bb_copy_done: 'Đã sao chép!',
+  bb_no_results: 'Không tìm thấy tiết diện phù hợp',
+  bb_ref_label: 'Tham chiếu',
 } as const
 
 export default shared

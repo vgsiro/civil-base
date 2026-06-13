@@ -1,12 +1,8 @@
 'use client'
 import { Ec2RectInput, Ec2RectResult } from '../rect-engine/rect-calc'
-import { ReportMeta } from './rect-export-modal'
 import { SectionDiagram } from '../../../../_shared/section-diagram'
 import { NMDiagram } from '../../../../_shared/nm-diagram'
 import { useTranslation } from '@/app/i18n/LanguageContext'
-import type { TranslationKey } from '@/app/i18n'
-
-type TFn = (key: TranslationKey) => string
 
 function n(v: number, d = 2) { return isFinite(v) ? v.toFixed(d) : '—' }
 function n2(v: number, d = 1) { return isFinite(v) ? v.toFixed(d) : '—' }
@@ -60,85 +56,12 @@ function Section({ title, children }: { title: React.ReactNode; children: React.
   )
 }
 
-function Logo({ size = 28 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none">
-      <rect width="32" height="32" rx="6" fill="#1d4ed8" />
-      <rect x="6" y="22" width="20" height="3" rx="1.5" fill="white" opacity="0.9" />
-      <rect x="7" y="7" width="3" height="15" rx="1.5" fill="white" />
-      <rect x="22" y="7" width="3" height="15" rx="1.5" fill="white" />
-      <rect x="10" y="7" width="12" height="3" rx="1.5" fill="white" opacity="0.7" />
-    </svg>
-  )
-}
-
-function ReportHeader({ meta, t }: { meta: ReportMeta; t: TFn }) {
-  const headerMeta: { label: string; key: keyof ReportMeta }[] = [
-    { label: t('std_ec2rc_rep_meta_project'), key: 'project' },
-    { label: t('std_ec2rc_rep_meta_report'), key: 'report' },
-    { label: t('std_ec2rc_rep_meta_designer'), key: 'designer' },
-    { label: t('std_ec2rc_rep_meta_checker'), key: 'checker' },
-    { label: t('std_ec2rc_rep_meta_approver'), key: 'approver' },
-    { label: t('std_ec2rc_rep_meta_date'), key: 'date' },
-  ]
-  return (
-    <div style={{ marginBottom: 10 }}>
-      <div style={{
-        background: 'linear-gradient(135deg,#1d4ed8,#1e40af)',
-        borderRadius: '6px 6px 0 0', padding: '10px 16px',
-        display: 'flex', alignItems: 'center', gap: 10,
-      }}>
-        <Logo size={28} />
-        <div>
-          <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '-0.02em' }}>CivilAxis</div>
-          <div style={{ color: '#bfdbfe', fontSize: 9, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{t('std_ec2rc_rep_subtitle')}</div>
-        </div>
-        <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <div style={{ color: '#bfdbfe', fontSize: 9 }}>EN 1992-1-1:2004+AC:2008</div>
-          <div style={{ color: '#93c5fd', fontSize: 9 }}>{t('std_ec2rc_rep_section_uls')}</div>
-        </div>
-      </div>
-      <div style={{
-        display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
-        border: '1px solid #bfdbfe', borderTop: 'none', borderRadius: '0 0 6px 6px', overflow: 'hidden',
-      }}>
-        {headerMeta.map(({ label, key }, i) => (
-          <div key={key} style={{
-            padding: '6px 10px', background: i % 2 === 0 ? '#f0f9ff' : '#fff',
-            borderRight: i % 3 !== 2 ? '1px solid #e0f2fe' : 'none',
-            borderBottom: i < 3 ? '1px solid #e0f2fe' : 'none',
-          }}>
-            <div style={{ fontSize: 8, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{label}</div>
-            <div style={{ fontSize: 11, color: '#1e293b', fontWeight: 600, marginTop: 1, minHeight: 14 }}>{meta[key] || '—'}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function ReportFooter({ t }: { t: TFn }) {
-  return (
-    <div className="screen-only" style={{
-      marginTop: 28, borderTop: '1.5px solid #e2e8f0',
-      paddingTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-        <Logo size={14} />
-        <span style={{ fontSize: 9, color: '#475569', fontWeight: 700 }}>CivilAxis</span>
-        <span style={{ fontSize: 9, color: '#94a3b8' }}>{t('std_ec2rc_rep_tools')}</span>
-      </div>
-      <div style={{ fontSize: 9, color: '#64748b', fontWeight: 600 }}>{t('std_ec2rc_rep_rights')}</div>
-      <div style={{ fontSize: 9, color: '#94a3b8' }}>{t('std_ec2rc_rep_footer_note')}</div>
-    </div>
-  )
-}
 
 // A4 usable px at 96dpi minus fixed chrome height (header ≈90px + cards ≈68px + solver ≈38px + gaps ≈20px)
 const DIAGRAM_BUDGET = 740
 
-export function RectReport({ inp, res, meta }: {
-  inp: Ec2RectInput; res: Ec2RectResult; meta: ReportMeta
+export function RectReport({ inp, res }: {
+  inp: Ec2RectInput; res: Ec2RectResult
 }) {
   const { t } = useTranslation()
   const budget = DIAGRAM_BUDGET
@@ -152,10 +75,9 @@ export function RectReport({ inp, res, meta }: {
   const hasM2 = res.M2 > 0
 
   return (
-    <div style={{ padding: '12px 24px 60px', fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 11, color: '#1e293b', background: '#fff', minHeight: '297mm' }}>
+    <div style={{ padding: '12px 0 60px', fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 11, color: '#1e293b', background: '#fff', minHeight: '297mm' }}>
       {/* Chrome + diagrams wrapped together so the paging engine treats them as one indivisible block */}
       <div>
-        <ReportHeader meta={meta} t={t} />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
           <div style={{ background: ok_M ? '#f0fdf4' : '#fef2f2', border: `1.5px solid ${ok_M ? '#bbf7d0' : '#fecaca'}`, borderRadius: 8, padding: '10px 14px', textAlign: 'center' }}>
@@ -300,7 +222,6 @@ export function RectReport({ inp, res, meta }: {
         )}
       </div>
 
-      <ReportFooter t={t} />
     </div>
   )
 }

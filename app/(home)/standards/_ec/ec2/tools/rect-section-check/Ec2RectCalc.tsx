@@ -6,8 +6,7 @@ import { RebarRow } from './rect-engine/rect-types'
 import { Ec2SlsInput } from './rect-engine/rect-sls-calc'
 import { RectInputPanel } from './rect-ui/rect-input-panel'
 import { RectResultsPanel } from './rect-ui/rect-results-panel'
-import { supabase } from '@/lib/supabase'
-import { useToolAccess } from '@/lib/useSubscription'
+import { useCurrentUser, useToolAccess } from '@/lib/useSubscription'
 import { CopyProvider } from '@/app/(home)/standards/_lib/ui'
 import { encodeRectState, decodeRectState } from './rect-url-state'
 
@@ -30,14 +29,7 @@ export default function Ec2RectCalc({ onBack }: { onBack?: () => void }) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [userId, setUserId] = useState<string | null>(null)
-  const [userEmail, setUserEmail] = useState<string | null>(null)
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUserId(user?.id ?? null)
-      setUserEmail(user?.email ?? null)
-    })
-  }, [])
+  const { userId, userEmail } = useCurrentUser()
   const toolAccess = useToolAccess('ec2_rect_section_check', userId, userEmail)
 
   // Decode initial state from URL, fall back to DEFAULT

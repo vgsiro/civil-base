@@ -10,6 +10,8 @@ import home from './home'
 import ec2rect from './tools/ec2-rect'
 import ec1wind from './tools/ec1-wind'
 import ec3bolt from './tools/ec3-bolt'
+import ssShard from './tools/steel-sections/shared'
+import ssUbUc from './tools/steel-sections/ub-uc'
 
 const vi = {
   ...common,
@@ -23,6 +25,8 @@ const vi = {
   ...ec2rect,
   ...ec1wind,
   ...ec3bolt,
+  ...ssShard,
+  ...ssUbUc,
 }
 
 export default vi

@@ -3,6 +3,18 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import type { SubscriptionTier } from '../app/_types'
 
+export function useCurrentUser(): { userId: string | null; userEmail: string | null } {
+  const [userId, setUserId] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string | null>(null)
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUserId(user?.id ?? null)
+      setUserEmail(user?.email ?? null)
+    })
+  }, [])
+  return { userId, userEmail }
+}
+
 const TIER_RANK: Record<SubscriptionTier, number> = {
   normal: 0, pro: 1, premium: 2, admin: 3, main_admin: 4,
 }

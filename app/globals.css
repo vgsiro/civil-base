@@ -122,6 +122,11 @@ body.modal-open { overflow: hidden; }
   .uc-sidebar { display: none !important; }
   .uc-mobile-cat { display: block !important; padding: 10px 14px; background: #fff; border-bottom: 1px solid #e2e8f0; }
   .uc-fields { grid-template-columns: 1fr !important; padding: 16px 14px 80px !important; }
+
+  /* Blue Book: hide sidebar, show select dropdown */
+  .bb-sidebar { display: none !important; }
+  .bb-mobile-cat { display: block !important; padding: 10px 14px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+  .bb-table-wrap { overflow-x: auto !important; }
 }
 
 @media (min-width: 769px) {

@@ -56,9 +56,9 @@ export function RectExportModal({
       groups={groups}
       onClose={onClose}
     >
-      {meta => (<>
+      {() => (<>
       <div ref={ulsRef}>
-        <RectReport inp={inp} res={res} meta={meta} />
+        <RectReport inp={inp} res={res} />
       </div>
       <div ref={ulsDetRef}>
         <div><RectUlsDetails inp={inp} res={res} /></div>
